@@ -105,7 +105,7 @@ log.error()未写入异常，推送效果（钉钉/邮箱）
 2. 推送策略（超时时间/超频次数，默认超时）
 ```
     logpolice.frequency-type=timeout 默认值
-    logpolice.timeInterval=5 默认值
+    logpolice.timeInterval=300 默认值
 ```
 ```
     logpolice.frequency-type=show_count
