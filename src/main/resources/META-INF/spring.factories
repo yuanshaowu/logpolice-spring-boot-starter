@@ -1,0 +1,6 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.logpolice.infrastructure.config.LogpoliceAutoConfiguration,\
+com.logpolice.infrastructure.config.LogpoliceDingDingAutoConfiguration,\
+com.logpolice.infrastructure.config.LogpoliceMailAutoConfiguration,\
+com.logpolice.infrastructure.config.LogpoliceRedisAutoConfiguration,\
+com.logpolice.infrastructure.config.LogpoliceLoclCacheAutoConfiguration
