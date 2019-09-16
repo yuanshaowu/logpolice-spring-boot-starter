@@ -85,14 +85,14 @@
 ```
 log.error()写入异常，推送效果（钉钉/邮箱）
 
-![效果](/src/main/resources/微信截图_20190916162148.png)
-![效果](/src/main/resources/微信截图_20190916162204.png)
-![效果](/src/main/resources/微信截图_20190916194724.png)
+![效果](/src/main/resources/wx_20190916162148.png)
+![效果](/src/main/resources/wx_20190916162204.png)
+![效果](/src/main/resources/wx_20190916194724.png)
 
 log.error()未写入异常，推送效果（钉钉/邮箱）
 
-![效果](/src/main/resources/微信截图_20190916163218.png)
-![效果](/src/main/resources/微信截图_20190916194628.png)
+![效果](/src/main/resources/wx_20190916163218.png)
+![效果](/src/main/resources/wx_20190916194628.png)
 
 
 ## 消息策略
