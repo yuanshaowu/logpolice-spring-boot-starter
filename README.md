@@ -34,7 +34,7 @@
 3. 在``application.properties``或者``application.yml``中做如下的配置：
 ```
     logpolice.enabled=true
-    logpolice.dingding.web-hook=https://oapi.dingtalk.com/robot/send?access_token=xxxxxxxxxxx
+    logpolice.dingding.web-hook=https://oapi.dingtalk.com/robot/send?access_token=xxxxxxxxxx
 
 ```
 4. 钉钉配置：[钉钉机器人](https://open-doc.dingtalk.com/microapp/serverapi2/krgddi "自定义机器人")
