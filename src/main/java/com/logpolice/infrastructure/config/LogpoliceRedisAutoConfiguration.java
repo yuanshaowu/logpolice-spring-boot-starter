@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
- * 邮件配置自动装配
+ * redis配置自动装配
  *
  * @author huang
  * @date 2019/8/28

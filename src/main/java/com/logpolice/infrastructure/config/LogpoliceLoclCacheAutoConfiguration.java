@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 邮件配置自动装配
+ * 本地缓存自动装配
  *
  * @author huang
  * @date 2019/8/28
