@@ -82,6 +82,13 @@ public class LogpoliceProperties {
     private Boolean enableRedisStorage = LogpoliceConstant.ENABLE_REDIS_STORAGE;
 
     /**
+     * 异常redisKey
+     */
+    @Getter
+    @Setter
+    private String exceptionRedisKey = LogpoliceConstant.EXCEPTION_STATISTIC_REDIS_KEY;
+
+    /**
      * 异常白名单
      */
     @Getter

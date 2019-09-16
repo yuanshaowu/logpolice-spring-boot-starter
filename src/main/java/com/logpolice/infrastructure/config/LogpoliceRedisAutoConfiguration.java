@@ -6,9 +6,7 @@ import com.logpolice.infrastructure.properties.LogpoliceProperties;
 import com.logpolice.infrastructure.rpc.ExceptionStatisticRedis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -30,17 +28,20 @@ public class LogpoliceRedisAutoConfiguration {
 
     private final RedisTemplate redisTemplate;
     private final ExceptionNoticeRepository exceptionNoticeRepository;
+    private final LogpoliceProperties logpoliceProperties;
 
     @Autowired
     public LogpoliceRedisAutoConfiguration(RedisTemplate redisTemplate,
-                                           ExceptionNoticeRepository exceptionNoticeRepository) {
+                                           ExceptionNoticeRepository exceptionNoticeRepository,
+                                           LogpoliceProperties logpoliceProperties) {
         this.redisTemplate = redisTemplate;
         this.exceptionNoticeRepository = exceptionNoticeRepository;
+        this.logpoliceProperties = logpoliceProperties;
     }
 
     @Bean
     public ExceptionStatisticRedis exceptionStatisticRedis() {
-        return new ExceptionStatisticRedis(redisTemplate);
+        return new ExceptionStatisticRedis(redisTemplate, logpoliceProperties);
     }
 
     @Bean

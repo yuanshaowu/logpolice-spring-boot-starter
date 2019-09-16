@@ -92,59 +92,36 @@ log.error()未写入异常，推送效果
 
 ![效果](/src/main/resources/微信截图_20190916163218.png)
 
+
 ## 消息策略
 1. 推送类型（钉钉/邮件，默认钉钉）
 ```
-    #logpolice.notice-send-typeding_ding 默认值
+    #logpolice.notice-send-type=ding_ding 默认值
     logpolice.notice-send-type=mail
 ```
 
 2. 推送策略（超时时间/超频次数，默认超时）
 ```
-    logpolice.frequency-type=timeout 默认
-    logpolice.timeInterval=5 默认
-
+    logpolice.frequency-type=timeout 默认值
+    logpolice.timeInterval=5 默认值
 ```
 ```
     logpolice.frequency-type=show_count
     logpolice.show-count=10
-
 ```
 
-3. 异常白名单,日志数据保留时间
+3. 日志数据重置时间，异常白名单
 ```
     logpolice.clean-time-interval=3600
     logpolice.exception-white-list=java.lang.ArithmeticException,java.lang.ArithmeticException2
 ```
 
-## 邮件接入
-1. 有邮件通知的话需要在``pom.xml``中加入如下依赖
-```
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-mail</artifactId>
-    </dependency>
-```
-2. application.properties 新增邮件配置
-```
-    spring.mail.host=smtp.163.com
-    spring.mail.username=xxx@163.com
-    spring.mail.password=xxx
-    spring.mail.port=465
-    spring.mail.protocol=smtp
-    spring.mail.default-encoding=UTF-8
-    spring.mail.properties.mail.smtp.ssl.enable=true
-    spring.mail.properties.mail.imap.ssl.socketFactory.fallback=false
-    spring.mail.properties.mail.smtp.ssl.socketFactory.class=com.fintech.modules.base.util.mail.MailSSLSocketFactory
-    spring.mail.properties.mail.smtp.auth=true
-    spring.mail.properties.mail.smtp.starttls.enable=true
-    spring.mail.properties.mail.smtp.starttls.required=true
-```
 
 ## redis接入（多实例共享异常数据）
 1. 修改application.properties 异常redis开关
 ```
-    logpolice.notice-send-type=mail
+    logpolice.enable-redis-storage=true
+    logpolice.exception-redis-key=xxx_xxxx_xxxx:
 ```
 2. 需要引入spring-boot-starter-data-redis
 ```
@@ -160,3 +137,32 @@ log.error()未写入异常，推送效果
      spring.redis.port=6379
      spring.redis.password=xxxx
  ```
+
+
+## 邮件接入
+1. 有邮件通知的话需要在``pom.xml``中加入如下依赖
+```
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
+```
+2. application.properties 新增邮件配置，(163，qq 不同邮箱配置可能有差异)
+```
+    logpolice.notice-send-type=mail
+    logpolice.mail.from=发送者@qq.com
+    logpolice.mail.to=接收者@163.com
+    logpolice.mail.cc=
+    logpolice.mail.bcc=
+    
+    spring.mail.host=smtp.qq.com
+    spring.mail.username=发送者@vip.qq.com
+    spring.mail.password=xxxxxxxx
+    spring.mail.default-encoding=UTF-8
+    spring.mail.properties.mail.smtp.ssl.enable=true
+    spring.mail.properties.mail.imap.ssl.socketFactory.fallback=false
+    spring.mail.properties.mail.smtp.ssl.socketFactory.class=com.fintech.modules.base.util.mail.MailSSLSocketFactory
+    spring.mail.properties.mail.smtp.auth=true
+    spring.mail.properties.mail.smtp.starttls.enable=true
+    spring.mail.properties.mail.smtp.starttls.required=true
+```
