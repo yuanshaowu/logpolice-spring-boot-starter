@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -16,18 +17,18 @@ import java.util.Set;
 public class LogpoliceDingDingProperties {
 
     /**
-     * 机器人token
+     * webhook
      */
     @Getter
     @Setter
-    private String token;
+    private String webHook;
 
     /**
      * 被@人的手机号
      */
     @Getter
     @Setter
-    private Set<String> atMobiles;
+    private Set<String> atMobiles = new HashSet<>();
 
     /**
      * 此消息类型为固定text

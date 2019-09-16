@@ -4,7 +4,9 @@
 ## 背景：
 
 对于项目工程来说，bug是不可能避免的，生产环境并不能像本地环境一样方便调试，在使用者发现bug之前开发者自己先发现并提前解决肯定上上策，但是有些框架异常并非自己预期，
-这时候可以考虑基于log.error()主动触发异常提示开发者，并精确获取异常堆栈信息
+这时候可以考虑基于log.error()主动触发异常提示开发者，并精确获取异常堆栈信息，在获取异常消息推送的避免消息轰炸，可以根据推送策略自定义配置
+
+
 
 ## 系统需求
 
@@ -26,12 +28,13 @@
         <groupId>com.logpolice</groupId>
         <artifactId>logpolice-spring-boot-starter</artifactId>
         <version>1.0.0</version>
-    </dependency>
+
+-
 ```
 3. 在``application.properties``或者``application.yml``中做如下的配置：
 ```
 logpolice.enabled=true
-logpolice.dingding.token=xxxxxxxxxxx
+logpolice.dingding.webHook=xxxxxxxxxxx
 
 ```
 4. 钉钉配置：[钉钉机器人](https://open-doc.dingtalk.com/microapp/serverapi2/krgddi "自定义机器人")

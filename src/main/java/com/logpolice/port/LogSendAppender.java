@@ -10,6 +10,9 @@ import com.logpolice.infrastructure.properties.LogpoliceConstant;
 import com.logpolice.infrastructure.properties.LogpoliceProperties;
 import com.logpolice.infrastructure.utils.ApplicationContextProvider;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
+
+import java.util.Set;
 
 /**
  * 日志报警Appender
@@ -42,6 +45,13 @@ public class LogSendAppender extends UnsynchronizedAppenderBase<LoggingEvent> {
 
             ExceptionNotice exceptionNotice = new ExceptionNotice(logpoliceProperties.getAppCode(),
                     logpoliceProperties.getLocalIp(), layout.doLayout(eventObject), eventObject);
+
+            Set<String> exceptionWhiteList = logpoliceProperties.getExceptionWhiteList();
+            if (!CollectionUtils.isEmpty(exceptionWhiteList) && exceptionWhiteList.contains(exceptionNotice.getExceptionClassName())) {
+                log.info("logSendAppender.append exceptionWhiteList skip send, exception:{}", exceptionNotice.getExceptionClassName());
+                return;
+            }
+
             NoticeService noticeService = ApplicationContextProvider.getBean(NoticeService.class);
             noticeService.send(exceptionNotice, logpoliceProperties);
         }

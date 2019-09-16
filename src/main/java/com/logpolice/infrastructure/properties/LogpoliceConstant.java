@@ -54,11 +54,6 @@ public class LogpoliceConstant {
     public static final String PROFILES_ACTIVE = " ";
 
     /**
-     * 钉钉推送地址
-     */
-    public static final String SEND_DING_DING_URL = "https://oapi.dingtalk.com/robot/send?access_token=";
-
-    /**
      * 钉钉所有人@时：true，否则为false
      */
     public static final Boolean DING_DING_IS_AT_ALL = false;

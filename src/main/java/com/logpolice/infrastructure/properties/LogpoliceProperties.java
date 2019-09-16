@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * 日志报警配置
  *
@@ -77,4 +80,11 @@ public class LogpoliceProperties {
     @Getter
     @Setter
     private Boolean enableRedisStorage = LogpoliceConstant.ENABLE_REDIS_STORAGE;
+
+    /**
+     * 异常白名单
+     */
+    @Getter
+    @Setter
+    private Set<String> exceptionWhiteList = new HashSet<>();
 }
