@@ -17,7 +17,7 @@
 ![目前工程版本](https://img.shields.io/badge/version-1.0.0-green.svg?style=for-the-badge&logo=appveyor)
 
 
-## 快速接入
+## 快速接入(本地缓存)
 （默认钉钉推送，本地缓存。有需求可以更改配置，邮箱或redis异常存储）
 1. 工程``mvn clean install``打包本地仓库。
 2. 在引用工程中的``pom.xml``中做如下依赖
@@ -28,7 +28,7 @@
         <version>1.0.0</version>
     </dependency>
 ```
-3. 在``application.properties``或者``application.yml``中做如下的配置：（至于以上的配置说明后面的章节会讲到）
+3. 在``application.properties``或者``application.yml``中做如下的配置：
 ```
 logpolice.enabled=true
 logpolice.dingding.token=xxxxxxxxxxx
@@ -72,3 +72,23 @@ logpolice.dingding.token=xxxxxxxxxxx
     
     }
 ```
+
+## 多实例redis接入
+1. 修改application.properties 异常redis开关
+```
+    logpolice.enable-redis-storage=true
+```
+2. 需要引入redis starter
+```
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+```
+3. 配置redis
+ ```
+     spring.redis.database=0
+     spring.redis.host=xx.xx.xx.xxx
+     spring.redis.port=6379
+     spring.redis.password=xxxx
+ ```
