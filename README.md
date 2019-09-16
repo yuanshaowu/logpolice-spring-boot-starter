@@ -83,14 +83,16 @@
     
     }
 ```
-log.error()写入异常，推送效果
+log.error()写入异常，推送效果（钉钉/邮箱）
 
 ![效果](/src/main/resources/微信截图_20190916162148.png)
 ![效果](/src/main/resources/微信截图_20190916162204.png)
+![效果](/src/main/resources/微信截图_20190916194724.png)
 
-log.error()未写入异常，推送效果
+log.error()未写入异常，推送效果（钉钉/邮箱）
 
 ![效果](/src/main/resources/微信截图_20190916163218.png)
+![效果](/src/main/resources/微信截图_20190916194628.png)
 
 
 ## 消息策略
@@ -166,3 +168,5 @@ log.error()未写入异常，推送效果
     spring.mail.properties.mail.smtp.starttls.enable=true
     spring.mail.properties.mail.smtp.starttls.required=true
 ```
+
+有任何好的建议可以联系 qq:379198812，感谢支持
