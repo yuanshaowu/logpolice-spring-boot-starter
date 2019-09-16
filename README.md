@@ -158,7 +158,7 @@ log.error()未写入异常，推送效果（钉钉/邮箱）
     logpolice.mail.bcc=
     
     spring.mail.host=smtp.qq.com
-    spring.mail.username=发送者@vip.qq.com
+    spring.mail.username=发送者@qq.com
     spring.mail.password=xxxxxxxx
     spring.mail.default-encoding=UTF-8
     spring.mail.properties.mail.smtp.ssl.enable=true
