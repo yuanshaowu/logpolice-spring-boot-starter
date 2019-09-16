@@ -83,6 +83,11 @@
     
     }
 ```
+log.error()写入异常，推送效果
+![效果](/src/main/resources/微信截图_20190916162148.png)
+![效果](/src/main/resources/微信截图_20190916162204.png)
+log.error()未写入异常，推送效果
+![效果](/src/main/resources/微信截图_20190916163218.png)
 
 ## 消息策略
 1. 推送类型（钉钉/邮件，默认钉钉）
