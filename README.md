@@ -19,7 +19,7 @@
 ![目前工程版本](https://img.shields.io/badge/version-1.0.0-green.svg?style=for-the-badge&logo=appveyor)
 
 
-## 快速接入(本地缓存)
+## 快速接入(默认本地缓存&钉钉推送)
 （默认钉钉推送，本地缓存。有需求可以更改配置，邮箱或redis异常存储）
 1. 工程``mvn clean install``打包本地仓库。
 2. 在引用工程中的``pom.xml``中做如下依赖
@@ -28,17 +28,17 @@
         <groupId>com.logpolice</groupId>
         <artifactId>logpolice-spring-boot-starter</artifactId>
         <version>1.0.0</version>
+    </dependency>
 
--
 ```
 3. 在``application.properties``或者``application.yml``中做如下的配置：
 ```
-logpolice.enabled=true
-logpolice.dingding.webHook=xxxxxxxxxxx
+    logpolice.enabled=true
+    logpolice.dingding.web-hook=https://oapi.dingtalk.com/robot/send?access_token=xxxxxxxxxxx
 
 ```
 4. 钉钉配置：[钉钉机器人](https://open-doc.dingtalk.com/microapp/serverapi2/krgddi "自定义机器人")
-5. 以上配置好以后就可以写demo测试啦，首先配置logback.xml，引用com.logpolice.port.LogSendAppender：
+5. 以上配置好以后就可以写demo测试啦，首先配置logback.xml
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
@@ -55,6 +55,14 @@ logpolice.dingding.webHook=xxxxxxxxxxx
         <appender-ref ref="LogDingDingAppender"/>
     </root>
 </configuration>
+```
+核心代码，引用com.logpolice.port.LogSendAppender：
+```
+    <appender name="LogDingDingAppender" class="com.logpolice.port.LogSendAppender"/>
+
+    <root level="ERROR">
+        <appender-ref ref="LogDingDingAppender"/>
+    </root>
 ```
 然后编写测试类，需要主动打印exception堆栈信息，否则日志获取不到：
 ```
@@ -76,19 +84,68 @@ logpolice.dingding.webHook=xxxxxxxxxxx
     }
 ```
 
-## 多实例redis接入
+## 消息策略
+1. 推送类型（钉钉/邮件，默认钉钉）
+```
+    #logpolice.notice-send-typeding_ding 默认值
+    logpolice.notice-send-type=mail
+```
+
+2. 推送策略（超时时间/超频次数，默认超时）
+```
+    logpolice.frequency-type=timeout 默认
+    logpolice.timeInterval=5 默认
+
+```
+```
+    logpolice.frequency-type=show_count
+    logpolice.show-count=10
+
+```
+
+3. 异常白名单,日志数据保留时间
+```
+    logpolice.clean-time-interval=3600
+    logpolice.exception-white-list=java.lang.ArithmeticException,java.lang.ArithmeticException2
+```
+
+## 邮件接入
+1. 有邮件通知的话需要在``pom.xml``中加入如下依赖
+```
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
+```
+2. application.properties 新增邮件配置
+```
+    spring.mail.host=smtp.163.com
+    spring.mail.username=xxx@163.com
+    spring.mail.password=xxx
+    spring.mail.port=465
+    spring.mail.protocol=smtp
+    spring.mail.default-encoding=UTF-8
+    spring.mail.properties.mail.smtp.ssl.enable=true
+    spring.mail.properties.mail.imap.ssl.socketFactory.fallback=false
+    spring.mail.properties.mail.smtp.ssl.socketFactory.class=com.fintech.modules.base.util.mail.MailSSLSocketFactory
+    spring.mail.properties.mail.smtp.auth=true
+    spring.mail.properties.mail.smtp.starttls.enable=true
+    spring.mail.properties.mail.smtp.starttls.required=true
+```
+
+## redis接入（多实例共享异常数据）
 1. 修改application.properties 异常redis开关
 ```
-    logpolice.enable-redis-storage=true
+    logpolice.notice-send-type=mail
 ```
-2. 需要引入redis starter
+2. 需要引入spring-boot-starter-data-redis
 ```
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-data-redis</artifactId>
     </dependency>
 ```
-3. 配置redis
+3. application.properties 新增redis配置
  ```
      spring.redis.database=0
      spring.redis.host=xx.xx.xx.xxx
