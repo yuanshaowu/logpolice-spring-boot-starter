@@ -42,7 +42,7 @@ public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
 
     @Override
     public void save(String openId, ExceptionStatistic exceptionStatistic) {
-        String key = this.logpoliceProperties.getExceptionRedisKey() + openId;
+        String key = logpoliceProperties.getExceptionRedisKey() + openId;
         redisTemplate.opsForValue().set(key, exceptionStatistic, LogpoliceConstant.CLEAN_TIME_INTERVAL, TimeUnit.SECONDS);
     }
 }
