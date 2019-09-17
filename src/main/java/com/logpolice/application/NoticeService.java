@@ -29,7 +29,7 @@ public class NoticeService {
     }
 
     public void send(ExceptionNotice exceptionNotice, LogpoliceProperties logpoliceProperties) {
-        String openId = exceptionNotice.getOpenId();
+        String openId = logpoliceProperties.getExceptionRedisKey() + exceptionNotice.getOpenId();
         ExceptionStatistic exceptionStatistic = exceptionStatisticRepository.findByOpenId(openId)
                 .orElse(new ExceptionStatistic(openId));
         log.info("noticeService.send start, openId:{}, exceptionStatistic:{}", openId, exceptionStatistic);

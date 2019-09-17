@@ -28,20 +28,17 @@ public class LogpoliceRedisAutoConfiguration {
 
     private final RedisTemplate redisTemplate;
     private final ExceptionNoticeRepository exceptionNoticeRepository;
-    private final LogpoliceProperties logpoliceProperties;
 
     @Autowired
     public LogpoliceRedisAutoConfiguration(RedisTemplate redisTemplate,
-                                           ExceptionNoticeRepository exceptionNoticeRepository,
-                                           LogpoliceProperties logpoliceProperties) {
+                                           ExceptionNoticeRepository exceptionNoticeRepository) {
         this.redisTemplate = redisTemplate;
         this.exceptionNoticeRepository = exceptionNoticeRepository;
-        this.logpoliceProperties = logpoliceProperties;
     }
 
     @Bean
     public ExceptionStatisticRedis exceptionStatisticRedis() {
-        return new ExceptionStatisticRedis(redisTemplate, logpoliceProperties);
+        return new ExceptionStatisticRedis(redisTemplate);
     }
 
     @Bean
