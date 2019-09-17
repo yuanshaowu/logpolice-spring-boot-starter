@@ -3,7 +3,6 @@ package com.logpolice.infrastructure.rpc;
 import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -26,13 +25,15 @@ public class ExceptionStatisticLocalCache implements ExceptionStatisticRepositor
 
     @Override
     public Optional<ExceptionStatistic> findByOpenId(String openId) {
-        ExceptionStatistic source = checkOpenId.get(openId);
-        if (Objects.isNull(source)) {
+        ExceptionStatistic exceptionStatistic = checkOpenId.get(openId);
+        if (Objects.isNull(exceptionStatistic)) {
             return Optional.empty();
         }
-        ExceptionStatistic target = new ExceptionStatistic();
-        BeanUtils.copyProperties(source, target);
-        return Optional.of(target);
+        return Optional.of(new ExceptionStatistic(exceptionStatistic.getShowCount(),
+                exceptionStatistic.getOpenId(),
+                exceptionStatistic.getFirstTime(),
+                exceptionStatistic.getNoticeTime(),
+                exceptionStatistic.getLastShowedCount()));
     }
 
     @Override
