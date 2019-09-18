@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
  * @date 2019/8/28
  */
 @Configuration
-@EnableConfigurationProperties(LogpoliceDingDingProperties.class)
 @AutoConfigureAfter(LogpoliceAutoConfiguration.class)
 @ConditionalOnProperty(name = "logpolice.notice-send-type", havingValue = "DING_DING", matchIfMissing = true)
 public class LogpoliceDingDingAutoConfiguration {

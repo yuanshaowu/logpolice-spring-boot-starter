@@ -20,7 +20,6 @@ import org.springframework.data.redis.core.RedisTemplate;
  * @date 2019/8/28
  */
 @Configuration
-@EnableConfigurationProperties(LogpoliceProperties.class)
 @AutoConfigureAfter({LogpoliceMailAutoConfiguration.class, LogpoliceDingDingAutoConfiguration.class})
 @ConditionalOnClass(RedisTemplate.class)
 @ConditionalOnProperty(name = "logpolice.enable-redis-storage", havingValue = "true")

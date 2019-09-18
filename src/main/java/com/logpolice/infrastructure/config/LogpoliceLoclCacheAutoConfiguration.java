@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2019/8/28
  */
 @Configuration
-@EnableConfigurationProperties(LogpoliceProperties.class)
 @AutoConfigureAfter({LogpoliceMailAutoConfiguration.class, LogpoliceDingDingAutoConfiguration.class})
 @ConditionalOnMissingBean(ExceptionStatisticRedis.class)
 public class LogpoliceLoclCacheAutoConfiguration {

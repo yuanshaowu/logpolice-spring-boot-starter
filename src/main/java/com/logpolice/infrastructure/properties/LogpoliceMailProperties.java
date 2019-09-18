@@ -1,43 +1,33 @@
 package com.logpolice.infrastructure.properties;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 /**
  * 日志报警邮件配置
  *
  * @author huang
  * @date 2019/8/29
  */
-@ConfigurationProperties(prefix = "logpolice.mail")
-public class LogpoliceMailProperties {
+public interface LogpoliceMailProperties {
 
     /**
      * 发件人，默认是通过springboot javamail配置的stmp的用户名
      */
-    @Getter
-    @Setter
-    private String from;
+    String getFrom();
 
     /**
      * 收件人
      */
-    @Getter
-    @Setter
-    private String[] to;
+
+    String[] getTo();
 
     /**
      * 抄送
      */
-    @Getter
-    @Setter
-    private String[] cc;
+
+    String[] getCc();
 
     /**
      * 密抄送
      */
-    @Getter
-    @Setter
-    private String[] bcc;
+
+    String[] getBcc();
 }
