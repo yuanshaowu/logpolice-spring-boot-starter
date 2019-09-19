@@ -18,7 +18,7 @@
 
 ## 当前版本
 
-![目前工程版本](https://img.shields.io/badge/logpolice%20spring%20boot%20starter-1.0.0%20acm%2B-red.svg?style=for-the-badge&logo=appveyor)
+![目前工程版本](https://img.shields.io/badge/version-1.0.0%20acm%2B-red.svg?style=for-the-badge&logo=appveyor)
 
 
 ## 快速接入(默认本地缓存&钉钉推送)
@@ -123,7 +123,7 @@ log.error()未写入异常，推送效果（钉钉/邮箱）
 ```
         @Override
         public NoticeSendEnum getNoticeSendType() {
-            return null;
+            return NoticeSendEnum.DING_DING;
         }
 ```
 
