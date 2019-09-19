@@ -31,7 +31,11 @@
         <artifactId>logpolice-spring-boot-starter</artifactId>
         <version>1.0.0-acm</version>
     </dependency>
-
+    <dependency>
+        <groupId>com.sprucetec.acm</groupId>
+        <artifactId>acm-client-spring-boot-starter</artifactId>
+        <version>0.1.2</version>
+    </dependency>
 ```
 3. 在spring 管理新增类文件，实现LogpoliceProperties, LogpoliceDingDingProperties：
 ```
