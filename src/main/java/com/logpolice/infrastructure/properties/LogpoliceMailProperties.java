@@ -16,18 +16,19 @@ public interface LogpoliceMailProperties {
     /**
      * 收件人
      */
-
     String[] getTo();
 
     /**
      * 抄送
      */
-
-    String[] getCc();
+    default String[] getCc() {
+        return new String[0];
+    }
 
     /**
      * 密抄送
      */
-
-    String[] getBcc();
+    default String[] getBcc() {
+        return new String[0];
+    }
 }

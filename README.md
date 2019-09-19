@@ -1,5 +1,7 @@
 # 日志异常消息通知的spring-boot-start框架：logpolice-spring-boot-starter
 
+## 特别版：
+部门项目需要运行期间动态加载日志报警配置，推荐使用此分支
 
 ## 背景：
 
@@ -16,7 +18,7 @@
 
 ## 当前版本
 
-![目前工程版本](https://img.shields.io/badge/version-1.0.0-green.svg?style=for-the-badge&logo=appveyor)
+![目前工程版本](https://img.shields.io/badge/logpolice%20spring%20boot%20starter-1.0.0%20acm%2B-red.svg?style=for-the-badge&logo=appveyor)
 
 
 ## 快速接入(默认本地缓存&钉钉推送)
@@ -27,15 +29,36 @@
     <dependency>
         <groupId>com.logpolice</groupId>
         <artifactId>logpolice-spring-boot-starter</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0-acm</version>
     </dependency>
 
 ```
-3. 在``application.properties``或者``application.yml``中做如下的配置：
+3. 在spring 管理新增类文件，实现LogpoliceProperties, LogpoliceDingDingProperties：
 ```
-    logpolice.enabled=true
-    logpolice.dingding.web-hook=https://oapi.dingtalk.com/robot/send?access_token=xxxxxxxxxx
-
+    @Component
+    @AcmPropertySource(dataId = "xxx.xxx-xxxx", first = true, autoRefreshed = true)
+    public class LogpoliceAcmProperties implements LogpoliceProperties, LogpoliceDingDingProperties {
+        
+        @Override
+        public String getWebHook() {
+            return "https://oapi.dingtalk.com/robot/send?access_token=xxxxxxx";
+        }
+    
+        @Override
+        public String getAppCode() {
+            return "xxxxxxxxx";
+        }
+    
+        @Override
+        public String getLocalIp() {
+            return "127.0.0.1";
+        }
+    
+        @Override
+        public Boolean getEnabled() {
+            return false;
+        }
+    }
 ```
 4. 钉钉配置：[钉钉机器人](https://open-doc.dingtalk.com/microapp/serverapi2/krgddi "自定义机器人")
 5. 以上配置好以后就可以写demo测试啦，首先配置logback.xml
@@ -98,32 +121,62 @@ log.error()未写入异常，推送效果（钉钉/邮箱）
 ## 消息策略
 1. 推送类型（钉钉/邮件，默认钉钉）
 ```
-    #logpolice.notice-send-type=ding_ding 默认值
-    logpolice.notice-send-type=mail
+        @Override
+        public NoticeSendEnum getNoticeSendType() {
+            return null;
+        }
 ```
 
 2. 推送策略（超时时间/超频次数，默认超时）
 ```
-    logpolice.frequency-type=timeout 默认值
-    logpolice.timeInterval=300 默认值，单位：秒
+        @Override
+        public NoticeFrequencyType getFrequencyType() {
+            return NoticeFrequencyType.SHOW_COUNT;
+        }
+    
+        @Override
+        public Long getTimeInterval() {
+            return 30;
+        }
 ```
 ```
-    logpolice.frequency-type=show_count
-    logpolice.show-count=10 默认值，单位：次数
+        @Override
+        public NoticeFrequencyType getFrequencyType() {
+            return NoticeFrequencyType.TIMEOUT;
+        }
+    
+        @Override
+        public Long getShowCount() {
+            return 10;
+        }
 ```
 
 3. 日志数据重置时间，异常白名单
 ```
-    logpolice.clean-time-interval=3600 默认值，单位：秒
-    logpolice.exception-white-list=java.lang.ArithmeticException,java.lang.ArithmeticException2
+        @Override
+        public Long getCleanTimeInterval() {
+            return 10800;
+        }
+    
+        @Override
+        public Set<String> getExceptionWhiteList() {
+            return Arrays.stream("java.lang.ArithmeticException".split(",")).collect(Collectors.toSet());
+        }
 ```
 
 
 ## redis接入（多实例共享异常数据）
 1. 修改application.properties 异常redis开关
 ```
-    logpolice.enable-redis-storage=true
-    logpolice.exception-redis-key=xxx_xxxx_xxxx:
+        @Override
+        public Boolean getEnableRedisStorage() {
+            return true;
+        }
+    
+        @Override
+        public String getExceptionRedisKey() {
+            return xxx_xxxx_xxxx;
+        }
 ```
 2. 需要引入spring-boot-starter-data-redis
 ```
@@ -149,14 +202,36 @@ log.error()未写入异常，推送效果（钉钉/邮箱）
         <artifactId>spring-boot-starter-mail</artifactId>
     </dependency>
 ```
-2. application.properties 新增邮件配置，(163，qq 不同邮箱配置可能有差异)
+2. 实现LogpoliceMailProperties
 ```
-    logpolice.notice-send-type=mail
-    logpolice.mail.from=发送者@qq.com
-    logpolice.mail.to=接收者@163.com
-    logpolice.mail.cc=
-    logpolice.mail.bcc=
+    public class LogpoliceAcmProperties implements LogpoliceProperties,LogpoliceMailProperties {
+        
+        ......省略常用配置
+        
+        @Override
+        public String getFrom() {
+            return "发送者@qq.com";
+        }
     
+        @Override
+        public String[] getTo() {
+            return new String["收件人@qq.com"];
+        }
+    
+        @Override
+        public String[] getCc() {
+            return new String[0];
+        }
+    
+        @Override
+        public String[] getBcc() {
+            return new String[0];
+        }
+    }
+```
+
+3. application.properties 新增邮件配置，(163，qq 不同邮箱配置可能有差异)
+```
     spring.mail.host=smtp.qq.com
     spring.mail.username=发送者@qq.com
     spring.mail.password=xxxxxxxx
