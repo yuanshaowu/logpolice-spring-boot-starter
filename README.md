@@ -1,5 +1,7 @@
 # 日志异常消息通知的spring-boot-start框架：logpolice-spring-boot-starter
 
+## 特別版本
+如果需要动态加载日志报警配置，请跳转future-acm分支
 
 ## 背景：
 
