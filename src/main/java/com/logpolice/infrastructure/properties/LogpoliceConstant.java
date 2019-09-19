@@ -19,11 +19,6 @@ public class LogpoliceConstant {
     public static final String LOCAL_IP = "暂无获取";
 
     /**
-     * 默认日志报警开关
-     */
-    public static final Boolean ENABLED = false;
-
-    /**
      * 默认日志redis开关
      */
     public static final Boolean ENABLE_REDIS_STORAGE = false;

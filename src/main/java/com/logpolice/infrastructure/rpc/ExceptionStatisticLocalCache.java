@@ -2,6 +2,7 @@ package com.logpolice.infrastructure.rpc;
 
 import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
+import com.logpolice.infrastructure.enums.NoticeRepositoryEnum;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -21,6 +22,11 @@ public class ExceptionStatisticLocalCache implements ExceptionStatisticRepositor
 
     public ExceptionStatisticLocalCache(Map<String, ExceptionStatistic> checkOpenId) {
         this.checkOpenId = checkOpenId;
+    }
+
+    @Override
+    public NoticeRepositoryEnum getType() {
+        return NoticeRepositoryEnum.LOCAL_CACHE;
     }
 
     @Override

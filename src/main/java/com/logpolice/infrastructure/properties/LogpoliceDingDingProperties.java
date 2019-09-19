@@ -1,5 +1,6 @@
 package com.logpolice.infrastructure.properties;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -18,15 +19,21 @@ public interface LogpoliceDingDingProperties {
     /**
      * 被@人的手机号
      */
-    Set<String> getAtMobiles();
+    default Set<String> getAtMobiles() {
+        return new HashSet<>();
+    }
 
     /**
      * 此消息类型为固定text
      */
-    String getMsgType();
+    default String getMsgType() {
+        return LogpoliceConstant.DING_DING_TEXT;
+    }
 
     /**
      * 所有人@时：true，否则为false
      */
-    Boolean getIsAtAll();
+    default Boolean getIsAtAll() {
+        return LogpoliceConstant.DING_DING_IS_AT_ALL;
+    }
 }

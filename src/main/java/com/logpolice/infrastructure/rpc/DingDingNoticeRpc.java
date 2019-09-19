@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.logpolice.domain.entity.ExceptionNotice;
 import com.logpolice.domain.repository.ExceptionNoticeRepository;
 import com.logpolice.infrastructure.dto.DingDingCommand;
+import com.logpolice.infrastructure.enums.NoticeSendEnum;
 import com.logpolice.infrastructure.exception.DingDingTokeNotExistException;
 import com.logpolice.infrastructure.properties.LogpoliceDingDingProperties;
 import com.logpolice.infrastructure.utils.HttpUtils;
@@ -23,6 +24,11 @@ public class DingDingNoticeRpc implements ExceptionNoticeRepository {
 
     public DingDingNoticeRpc(LogpoliceDingDingProperties logpoliceDingDingProperties) {
         this.logpoliceDingDingProperties = logpoliceDingDingProperties;
+    }
+
+    @Override
+    public NoticeSendEnum getType() {
+        return NoticeSendEnum.DING_DING;
     }
 
     @Override

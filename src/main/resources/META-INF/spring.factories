@@ -3,4 +3,5 @@ com.logpolice.infrastructure.config.LogpoliceAutoConfiguration,\
 com.logpolice.infrastructure.config.LogpoliceDingDingAutoConfiguration,\
 com.logpolice.infrastructure.config.LogpoliceMailAutoConfiguration,\
 com.logpolice.infrastructure.config.LogpoliceRedisAutoConfiguration,\
-com.logpolice.infrastructure.config.LogpoliceLoclCacheAutoConfiguration
+com.logpolice.infrastructure.config.LogpoliceLoclCacheAutoConfiguration,\
+com.logpolice.infrastructure.config.LogpoliceServiceAutoConfiguration

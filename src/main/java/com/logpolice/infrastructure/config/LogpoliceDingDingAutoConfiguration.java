@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -17,7 +18,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @AutoConfigureAfter(LogpoliceAutoConfiguration.class)
-@ConditionalOnProperty(name = "logpolice.notice-send-type", havingValue = "DING_DING", matchIfMissing = true)
 public class LogpoliceDingDingAutoConfiguration {
 
     private final LogpoliceDingDingProperties logpoliceDingDingProperties;

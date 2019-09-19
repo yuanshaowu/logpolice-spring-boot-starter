@@ -2,6 +2,7 @@ package com.logpolice.infrastructure.rpc;
 
 import com.logpolice.domain.entity.ExceptionNotice;
 import com.logpolice.domain.repository.ExceptionNoticeRepository;
+import com.logpolice.infrastructure.enums.NoticeSendEnum;
 import com.logpolice.infrastructure.exception.EmailFormatException;
 import com.logpolice.infrastructure.properties.LogpoliceConstant;
 import com.logpolice.infrastructure.properties.LogpoliceMailProperties;
@@ -34,6 +35,11 @@ public class MailNoticeClient implements ExceptionNoticeRepository {
         this.mailSender = mailSender;
         this.mailProperties = mailProperties;
         this.logpoliceMailProperties = logpoliceMailProperties;
+    }
+
+    @Override
+    public NoticeSendEnum getType() {
+        return NoticeSendEnum.MAIL;
     }
 
     @Override

@@ -5,10 +5,13 @@ import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.entity.NoticeFrequencyType;
 import com.logpolice.domain.repository.ExceptionNoticeRepository;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
+import com.logpolice.infrastructure.enums.NoticeRepositoryEnum;
+import com.logpolice.infrastructure.enums.NoticeSendEnum;
 import com.logpolice.infrastructure.properties.LogpoliceProperties;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * 消息逻辑层
@@ -19,16 +22,19 @@ import java.time.LocalDateTime;
 @Slf4j
 public class NoticeService {
 
-    private final ExceptionNoticeRepository exceptionNoticeRepository;
-    private final ExceptionStatisticRepository exceptionStatisticRepository;
+    private final Map<NoticeSendEnum, ExceptionNoticeRepository> exceptionNoticeRepositoryMap;
+    private final Map<NoticeRepositoryEnum, ExceptionStatisticRepository> exceptionStatisticRepositoryMap;
 
-    public NoticeService(ExceptionNoticeRepository exceptionNoticeRepository,
-                         ExceptionStatisticRepository exceptionStatisticRepository) {
-        this.exceptionNoticeRepository = exceptionNoticeRepository;
-        this.exceptionStatisticRepository = exceptionStatisticRepository;
+    public NoticeService(Map<NoticeSendEnum, ExceptionNoticeRepository> exceptionNoticeRepositoryMap,
+                         Map<NoticeRepositoryEnum, ExceptionStatisticRepository> exceptionStatisticRepositoryMap) {
+        this.exceptionNoticeRepositoryMap = exceptionNoticeRepositoryMap;
+        this.exceptionStatisticRepositoryMap = exceptionStatisticRepositoryMap;
     }
 
     public void send(ExceptionNotice exceptionNotice, LogpoliceProperties logpoliceProperties) {
+        ExceptionStatisticRepository exceptionStatisticRepository = exceptionStatisticRepositoryMap.get(
+                NoticeRepositoryEnum.getType(logpoliceProperties.getEnableRedisStorage()));
+
         String openId = logpoliceProperties.getExceptionRedisKey() + exceptionNotice.getOpenId();
         ExceptionStatistic exceptionStatistic = exceptionStatisticRepository.findByOpenId(openId)
                 .orElse(new ExceptionStatistic(openId));
@@ -46,7 +52,7 @@ public class NoticeService {
             LocalDateTime now = LocalDateTime.now();
             exceptionStatistic.updateData(showCount, now);
             exceptionNotice.updateData(showCount, now, exceptionStatistic.getFirstTime());
-            exceptionNoticeRepository.send(exceptionNotice);
+            exceptionNoticeRepositoryMap.get(logpoliceProperties.getNoticeSendType()).send(exceptionNotice);
         }
         exceptionStatisticRepository.save(openId, exceptionStatistic);
     }

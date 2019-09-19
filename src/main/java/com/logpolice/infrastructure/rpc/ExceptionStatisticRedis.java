@@ -2,6 +2,7 @@ package com.logpolice.infrastructure.rpc;
 
 import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
+import com.logpolice.infrastructure.enums.NoticeRepositoryEnum;
 import com.logpolice.infrastructure.properties.LogpoliceConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,6 +24,11 @@ public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
 
     public ExceptionStatisticRedis(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
+    }
+
+    @Override
+    public NoticeRepositoryEnum getType() {
+        return NoticeRepositoryEnum.REDIS;
     }
 
     @Override
