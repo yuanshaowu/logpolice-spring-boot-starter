@@ -56,7 +56,7 @@
     
         @Override
         public Boolean getEnabled() {
-            return false;
+            return true;
         }
     }
 ```
