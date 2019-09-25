@@ -26,7 +26,7 @@ public class LogpoliceConstant {
     /**
      * 默认日志报警清除时间
      */
-    public static final Long CLEAN_TIME_INTERVAL = 10800L;
+    public static final Long CLEAN_TIME_INTERVAL = 21600L;
 
     /**
      * 默认异常间隔时间

@@ -75,11 +75,5 @@
             <artifactId>spring-boot-starter-mail</artifactId>
             <optional>true</optional>
         </dependency>
-
-        <dependency>
-            <groupId>com.sprucetec.acm</groupId>
-            <artifactId>acm-client-spring-boot-starter</artifactId>
-            <version>0.1.2</version>
-        </dependency>
     </dependencies>
 </project>

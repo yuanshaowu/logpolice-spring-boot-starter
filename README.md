@@ -1,7 +1,7 @@
 # 日志异常消息通知的spring-boot-start框架：logpolice-spring-boot-starter
 
-## 特别版：
-部门项目需要运行期间动态加载日志报警配置，推荐使用此分支
+## 注意：
+此版本为<动态加载>报警配置版本，若不需要，可切换master分支，支持application.properties
 
 ## 背景：
 
@@ -9,6 +9,13 @@
 这时候可以考虑基于log.error()主动触发异常提示开发者，并精确获取异常堆栈信息，在获取异常消息推送的避免消息轰炸，可以根据推送策略自定义配置。本项目基于以上需求并
 结合DDD领域开发设计而成，简单接入消息报功能
 
+## 功能
+1. 监听log.error()，异步推送堆栈信息，快速接入
+2. 提供推送策略，避免消息轰炸（超频/超时）
+3. 提供本地，redis 数据存储，按需配置（默认本地）
+4. 提供钉钉，邮件 推送类型，按需配置（默认钉钉）
+5. 提供异常过滤白名单
+6. 此版本提供报警属性动态配置
 
 ## 系统需求
 
@@ -31,6 +38,7 @@
         <artifactId>logpolice-spring-boot-starter</artifactId>
         <version>1.0.0-acm</version>
     </dependency>
+    <!-- 本demo使用acm，可以其他缓存读取 -->
     <dependency>
         <groupId>com.sprucetec.acm</groupId>
         <artifactId>acm-client-spring-boot-starter</artifactId>
@@ -39,6 +47,7 @@
 ```
 3. 在spring 管理新增类文件，实现LogpoliceProperties, LogpoliceDingDingProperties：
 ```
+    //本demo使用acm，可以其他缓存读取
     @Component
     @AcmPropertySource(dataId = "xxx.xxx-xxxx", first = true, autoRefreshed = true)
     public class LogpoliceAcmProperties implements LogpoliceProperties, LogpoliceDingDingProperties {
@@ -65,7 +74,7 @@
     }
 ```
 4. 钉钉配置：[钉钉机器人](https://open-doc.dingtalk.com/microapp/serverapi2/krgddi "自定义机器人")
-5. 以上配置好以后就可以写demo测试啦，首先配置logback.xml
+5. 以上配置好以后就可以写demo测试啦，首先创建logback.xml
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
@@ -83,7 +92,7 @@
     </root>
 </configuration>
 ```
-核心代码，引用com.logpolice.port.LogSendAppender：
+注：如果已有logback.xml，引用LogSendAppender类即可
 ```
     <appender name="LogDingDingAppender" class="com.logpolice.port.LogSendAppender"/>
 
@@ -91,7 +100,7 @@
         <appender-ref ref="LogDingDingAppender"/>
     </root>
 ```
-然后编写测试类，需要主动打印exception堆栈信息，否则日志获取不到：
+6. 然后编写测试类，需要主动打印exception堆栈信息，否则日志获取不到：
 ```
     @RunWith(SpringRunner.class)
     @SpringBootTest(classes = DemoApplication.class)
@@ -121,8 +130,53 @@ log.error()未写入异常，推送效果（钉钉/邮箱）
 ![效果](/src/main/resources/wx_20190916163218.png)
 ![效果](/src/main/resources/wx_20190916194628.png)
 
+## 全部配置
+1. 通用配置（*必填）, 需实现：LogpoliceProperties接口
+```
+     * 1. 工程名          
+     * 2. 工程地址
+       3. 日志报警开关 （默认：关闭）
+       4. 日志报警清除时间 （默认：21600秒 = 6小時）                 
+       5. 通知频率类型：超时/超频 （默认：超时）
+       6. 超时间隔时间 （默认：300秒 = 5分钟）
+       7. 超频间隔次数 （默认：10次）
+       8. 消息推送类型：钉钉/邮件 （默认：钉钉）
+       9. redis配置开关 （默认：关闭）
+       10. redis缓存key （默认：logpolice_exception_statistic:）
+       11. 异常白名单 （默认：无)
+       12. 类文件白名单 （默认：无)
+ ```
+ 
+ 2. 钉钉配置（若接入，*必填）, 需实现：LogpoliceDingDingProperties接口
+```
+     * 钉钉webhook
+       被@人的手机号（默认：无)
+       此消息类型为固定text（默认：text)
+       所有人@时：true，否则为false（默认：false)
+```
+ 3. 邮箱配置（若接入，*必填）, 需实现：LogpoliceMailProperties接口
+```
+       #报警配置，接口实现
+     * 发件人 （应配置spring邮箱配置一致）
+     * 收件人  
+       抄送 （默认：无)
+       密抄送 （默认：无)
 
-## 消息策略
+       #application.properties spring邮箱配置
+     * spring.mail.host=smtp.qq.com
+     * spring.mail.username=发送者@qq.com
+     * spring.mail.password=xxxxxxxx
+     * spring.mail.default-encoding=UTF-8
+     * spring.mail.properties.mail.smtp.ssl.enable=true
+     * spring.mail.properties.mail.imap.ssl.socketFactory.fallback=false
+     * spring.mail.properties.mail.smtp.ssl.socketFactory.class=com.fintech.modules.base.util.mail.MailSSLSocketFactory
+     * spring.mail.properties.mail.smtp.auth=true
+     * spring.mail.properties.mail.smtp.starttls.enable=true
+     * spring.mail.properties.mail.smtp.starttls.required=true
+```
+
+
+## 常用配置
 1. 推送类型（钉钉/邮件，默认钉钉）
 ```
         @Override
@@ -169,7 +223,7 @@ log.error()未写入异常，推送效果（钉钉/邮箱）
 ```
 
 
-## redis接入（多实例共享异常数据）
+## redis接入
 1. 修改application.properties 异常redis开关
 ```
         @Override
@@ -248,4 +302,4 @@ log.error()未写入异常，推送效果（钉钉/邮箱）
     spring.mail.properties.mail.smtp.starttls.required=true
 ```
 
-有任何好的建议可以联系 qq:379198812，感谢支持
+注：有任何好的建议可以联系 qq:379198812，感谢支持
