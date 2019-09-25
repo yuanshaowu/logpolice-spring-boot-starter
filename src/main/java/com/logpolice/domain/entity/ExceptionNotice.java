@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
@@ -13,6 +14,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * 异常信息
@@ -180,5 +182,22 @@ public class ExceptionNotice implements Serializable {
                 .append("最近时间：").append(DateUtils.format(latestShowTime)).append("\r\n")
                 .append("异常次数：").append(showCount);
         return text.toString();
+    }
+
+    /**
+     * 判断是否符合白名单
+     *
+     * @param exceptionWhiteList 异常白名单
+     * @param classWhiteList     类白名单
+     * @return 布尔
+     */
+    public boolean isSkip(Set<String> exceptionWhiteList, Set<String> classWhiteList) {
+        if (!CollectionUtils.isEmpty(exceptionWhiteList) && !StringUtils.isEmpty(exceptionClassName)) {
+            return exceptionWhiteList.contains(exceptionClassName);
+        }
+        if (!CollectionUtils.isEmpty(classWhiteList) && !StringUtils.isEmpty(classPath)) {
+            return classWhiteList.contains(classPath);
+        }
+        return false;
     }
 }

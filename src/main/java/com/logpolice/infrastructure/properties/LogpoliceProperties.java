@@ -84,4 +84,11 @@ public interface LogpoliceProperties {
     default Set<String> getExceptionWhiteList() {
         return new HashSet<>();
     }
+
+    /**
+     * 类白名单
+     */
+    default Set<String> getClassWhiteList() {
+        return new HashSet<>();
+    }
 }
