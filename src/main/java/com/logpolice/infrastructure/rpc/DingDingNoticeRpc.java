@@ -9,7 +9,7 @@ import com.logpolice.infrastructure.exception.DingDingTokeNotExistException;
 import com.logpolice.infrastructure.properties.LogpoliceDingDingProperties;
 import com.logpolice.infrastructure.utils.HttpUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
+import org.springframework.util.StringUtils;
 
 /**
  * 钉钉推送逻辑层
@@ -34,7 +34,7 @@ public class DingDingNoticeRpc implements ExceptionNoticeRepository {
     @Override
     public void send(ExceptionNotice exceptionNotice) {
         String webHook = logpoliceDingDingProperties.getWebHook();
-        if (Strings.isEmpty(webHook)) {
+        if (StringUtils.isEmpty(webHook)) {
             throw new DingDingTokeNotExistException("DingDingNoticeSendServiceImpl.send error! webHook is null!");
         }
         DingDingCommand dingDingCommand = new DingDingCommand(exceptionNotice.getText(),
