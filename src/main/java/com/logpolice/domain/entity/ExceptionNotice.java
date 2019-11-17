@@ -13,8 +13,10 @@ import org.springframework.util.StringUtils;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 异常信息
@@ -110,6 +112,26 @@ public class ExceptionNotice implements Serializable {
     private final static String DEFAULT_INFO = "未输出堆栈异常信息";
 
     /**
+     * 异常追踪信息
+     */
+    private final static String SIMPLIFY_TRACE_INFO = "...... not first push will show simplify frames omitted";
+
+    /**
+     * 异常追踪信息最小行数
+     */
+    private final static int SIMPLIFY_TRACE_MIN_NUM = 3;
+
+    /**
+     * 换行符
+     */
+    private final static String LINE = "\n";
+
+    /**
+     * 堆栈换行符
+     */
+    private final static String TRACE_INFO_LINE = "\\r\\n\\t";
+
+    /**
      * 异常信息
      *
      * @param project        工程
@@ -171,17 +193,64 @@ public class ExceptionNotice implements Serializable {
      */
     public String getText() {
         StringBuilder text = new StringBuilder();
-        text.append("工程名：").append(project).append("\r\n")
-                .append("工程地址：").append(StringUtils.isEmpty(projectAddress) ? "获取失败" : projectAddress).append("\r\n")
-                .append("类路径：").append(classPath).append("\r\n")
-                .append("方法名：").append(methodName).append("\r\n")
-                .append("参数信息：").append(Objects.isNull(params) ? "无" : Arrays.toString(params)).append("\r\n")
-                .append("异常信息：").append(exceptionMessage).append("\r\n")
-                .append("异常追踪：").append(traceInfo).append("\r\n")
-                .append("首次时间：").append(DateUtils.format(firstShowTime)).append("\r\n")
-                .append("最近时间：").append(DateUtils.format(latestShowTime)).append("\r\n")
+        text.append("工程名：").append(project).append(LINE)
+                .append("工程地址：").append(StringUtils.isEmpty(projectAddress) ? "获取失败" : projectAddress).append(LINE)
+                .append("类路径：").append(classPath).append(LINE)
+                .append("方法名：").append(methodName).append(LINE)
+                .append("参数信息：").append(Objects.isNull(params) ? "无" : Arrays.toString(params)).append(LINE)
+                .append("异常信息：").append(exceptionMessage).append(LINE)
+                .append("异常追踪：").append(isFirst() ? getDetailTraceInfo() : getSimplifyTraceInfo()).append(LINE)
+                .append("首次时间：").append(DateUtils.format(firstShowTime)).append(LINE)
+                .append("最近时间：").append(DateUtils.format(latestShowTime)).append(LINE)
                 .append("异常次数：").append(showCount);
         return text.toString();
+    }
+
+    /**
+     * 获取简化堆栈信息
+     *
+     * @return 堆栈信息
+     */
+    public String getSimplifyTraceInfo() {
+        if (StringUtils.isEmpty(traceInfo)) {
+            return DEFAULT_INFO;
+        }
+
+        List<String> traceInfos = Arrays.stream(traceInfo.split(TRACE_INFO_LINE)).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(traceInfos) || traceInfos.size() < SIMPLIFY_TRACE_MIN_NUM) {
+            return traceInfo;
+        }
+
+        List<String> simplifyTraceInfos = traceInfos.stream()
+                .limit(Math.min(SIMPLIFY_TRACE_MIN_NUM, traceInfos.size())).collect(Collectors.toList());
+        simplifyTraceInfos.add(SIMPLIFY_TRACE_INFO);
+        return simplifyTraceInfos.stream().collect(Collectors.joining(LINE));
+    }
+
+    /**
+     * 获取详细堆栈信息
+     *
+     * @return 堆栈信息
+     */
+    public String getDetailTraceInfo() {
+        if (StringUtils.isEmpty(traceInfo)) {
+            return DEFAULT_INFO;
+        }
+
+        List<String> traceInfos = Arrays.stream(traceInfo.split(TRACE_INFO_LINE)).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(traceInfos)) {
+            return traceInfo;
+        }
+        return traceInfos.stream().collect(Collectors.joining(LINE));
+    }
+
+    /**
+     * 是否首次推送
+     *
+     * @return 是否首次
+     */
+    public boolean isFirst() {
+        return Objects.equals(firstShowTime, latestShowTime);
     }
 
     /**

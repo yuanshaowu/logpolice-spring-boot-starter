@@ -33,16 +33,16 @@ public class DingDingNoticeRpc implements ExceptionNoticeRepository {
 
     @Override
     public void send(ExceptionNotice exceptionNotice) {
-        String webHook = logpoliceDingDingProperties.getWebHook();
+        String webHook = logpoliceDingDingProperties.getDingDingWebHook();
         if (StringUtils.isEmpty(webHook)) {
             throw new DingDingTokeNotExistException("DingDingNoticeSendServiceImpl.send error! webHook is null!");
         }
         DingDingCommand dingDingCommand = new DingDingCommand(exceptionNotice.getText(),
-                logpoliceDingDingProperties.getMsgType(),
-                logpoliceDingDingProperties.getAtMobiles(),
-                logpoliceDingDingProperties.getIsAtAll());
+                logpoliceDingDingProperties.getDingDingMsgType(),
+                logpoliceDingDingProperties.getDingDingAtMobiles(),
+                logpoliceDingDingProperties.getDingDingIsAtAll());
         String body = JSONObject.toJSONString(dingDingCommand);
         String result = HttpUtils.post(webHook, body);
-        log.info("noticeSendServiceImpl.send success, webHook:{}, command:{}, result:{}", webHook, body, result);
+        log.info("DingDingNoticeSendServiceImpl.send success, webHook:{}, command:{}, result:{}", webHook, body, result);
     }
 }

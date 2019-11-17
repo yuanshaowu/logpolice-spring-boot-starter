@@ -14,26 +14,26 @@ public interface LogpoliceDingDingProperties {
     /**
      * webhook
      */
-    String getWebHook();
+    String getDingDingWebHook();
 
     /**
      * 被@人的手机号
      */
-    default Set<String> getAtMobiles() {
+    default Set<String> getDingDingAtMobiles() {
         return new HashSet<>();
     }
 
     /**
      * 此消息类型为固定text
      */
-    default String getMsgType() {
+    default String getDingDingMsgType() {
         return LogpoliceConstant.DING_DING_TEXT;
     }
 
     /**
      * 所有人@时：true，否则为false
      */
-    default Boolean getIsAtAll() {
+    default Boolean getDingDingIsAtAll() {
         return LogpoliceConstant.DING_DING_IS_AT_ALL;
     }
 }
