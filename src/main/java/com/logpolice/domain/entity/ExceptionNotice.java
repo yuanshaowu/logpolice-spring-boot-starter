@@ -156,6 +156,7 @@ public class ExceptionNotice implements Serializable {
         if (Objects.nonNull(throwableProxy)) {
             updateMethodName(throwableProxy);
             updateStackTraceElementProxys(throwableProxy);
+            this.exceptionClassName = throwableProxy.getClassName();
         }
         this.openId = calOpenId();
     }
@@ -171,7 +172,6 @@ public class ExceptionNotice implements Serializable {
                         && Objects.nonNull(s.getStackTraceElement().getFileName()))
                 .findFirst()
                 .ifPresent(s -> this.methodName = s.getStackTraceElement().getMethodName());
-        this.exceptionClassName = throwableProxy.getClassName();
     }
 
     /**
