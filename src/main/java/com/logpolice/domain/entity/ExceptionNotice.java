@@ -1,21 +1,21 @@
 package com.logpolice.domain.entity;
 
+import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.classic.spi.StackTraceElementProxy;
 import com.logpolice.infrastructure.utils.DateUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.data.annotation.Transient;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -107,6 +107,12 @@ public class ExceptionNotice implements Serializable {
     private Long showCount;
 
     /**
+     * 堆栈信息
+     */
+    @Transient
+    private List<String> stackTraceElementProxys;
+
+    /**
      * 格式化时间
      */
     private final static String DEFAULT_INFO = "未输出堆栈异常信息";
@@ -119,7 +125,7 @@ public class ExceptionNotice implements Serializable {
     /**
      * 异常追踪信息最小行数
      */
-    private final static int SIMPLIFY_TRACE_MIN_NUM = 3;
+    private final static int TRACE_MIN_NUM = 3;
 
     /**
      * 换行符
@@ -127,12 +133,7 @@ public class ExceptionNotice implements Serializable {
     private final static String LINE = "\n";
 
     /**
-     * 堆栈换行符
-     */
-    private final static String TRACE_INFO_LINE = "\\r\\n\\t";
-
-    /**
-     * 异常信息
+     * 创建异常信息（自定义构造）
      *
      * @param project        工程
      * @param projectAddress 工程地址
@@ -145,19 +146,48 @@ public class ExceptionNotice implements Serializable {
         this.classPath = eventObject.getLoggerName();
         this.params = eventObject.getArgumentArray();
         this.exceptionMessage = eventObject.getFormattedMessage();
-        this.traceInfo = traceInfo;
+        this.traceInfo = StringUtils.isEmpty(traceInfo) ? DEFAULT_INFO : traceInfo;
         LocalDateTime localDateTime = DateUtils.getLocalDateTime(eventObject.getTimeStamp());
         this.latestShowTime = localDateTime;
         this.firstShowTime = localDateTime;
         this.showCount = 1L;
-        if (Objects.nonNull(eventObject.getThrowableProxy())) {
-            Arrays.stream(eventObject.getThrowableProxy().getStackTraceElementProxyArray())
-                    .filter(s -> s.getStackTraceElement().getClassName().contains(classPath)
-                            && Objects.nonNull(s.getStackTraceElement().getFileName())).findFirst()
-                    .ifPresent(s -> this.methodName = s.getStackTraceElement().getMethodName());
-            this.exceptionClassName = eventObject.getThrowableProxy().getClassName();
+
+        IThrowableProxy throwableProxy = eventObject.getThrowableProxy();
+        if (Objects.nonNull(throwableProxy)) {
+            updateMethodName(throwableProxy);
+            updateStackTraceElementProxys(throwableProxy);
         }
         this.openId = calOpenId();
+    }
+
+    /**
+     * 更新方法名
+     *
+     * @param throwableProxy 异常代理
+     */
+    private void updateMethodName(IThrowableProxy throwableProxy) {
+        Arrays.stream(throwableProxy.getStackTraceElementProxyArray())
+                .filter(s -> s.getStackTraceElement().getClassName().contains(classPath)
+                        && Objects.nonNull(s.getStackTraceElement().getFileName()))
+                .findFirst()
+                .ifPresent(s -> this.methodName = s.getStackTraceElement().getMethodName());
+    }
+
+    /**
+     * 设置异常堆栈信息
+     *
+     * @param throwableProxy 异常代理
+     */
+    private void updateStackTraceElementProxys(IThrowableProxy throwableProxy) {
+        String firstThrowable = throwableProxy.getClassName() + "：" + throwableProxy.getMessage();
+        List<String> stackTraceStr = Arrays.stream(throwableProxy.getStackTraceElementProxyArray())
+                .map(StackTraceElementProxy::getSTEAsString)
+                .collect(Collectors.toList());
+
+        List<String> stackTraces = new ArrayList<>();
+        stackTraces.add(firstThrowable);
+        stackTraces.addAll(stackTraceStr);
+        this.stackTraceElementProxys = stackTraces;
     }
 
     /**
@@ -179,11 +209,7 @@ public class ExceptionNotice implements Serializable {
     public void updateData(Long showCount, LocalDateTime latestShowTime, LocalDateTime firstShowTime) {
         this.showCount = Math.max(this.showCount, showCount);
         this.latestShowTime = latestShowTime;
-        if (Objects.equals(this.showCount, 1L)) {
-            this.firstShowTime = latestShowTime;
-        } else {
-            this.firstShowTime = firstShowTime;
-        }
+        this.firstShowTime = isFirst() ? latestShowTime : firstShowTime;
     }
 
     /**
@@ -212,17 +238,13 @@ public class ExceptionNotice implements Serializable {
      * @return 堆栈信息
      */
     public String getSimplifyTraceInfo() {
-        if (StringUtils.isEmpty(traceInfo)) {
-            return DEFAULT_INFO;
-        }
-
-        List<String> traceInfos = Arrays.stream(traceInfo.split(TRACE_INFO_LINE)).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(traceInfos) || traceInfos.size() < SIMPLIFY_TRACE_MIN_NUM) {
+        if (CollectionUtils.isEmpty(stackTraceElementProxys) || stackTraceElementProxys.size() < TRACE_MIN_NUM) {
             return traceInfo;
         }
 
-        List<String> simplifyTraceInfos = traceInfos.stream()
-                .limit(Math.min(SIMPLIFY_TRACE_MIN_NUM, traceInfos.size())).collect(Collectors.toList());
+        List<String> simplifyTraceInfos = stackTraceElementProxys.stream()
+                .limit(Math.min(TRACE_MIN_NUM, stackTraceElementProxys.size()))
+                .collect(Collectors.toList());
         simplifyTraceInfos.add(SIMPLIFY_TRACE_INFO);
         return simplifyTraceInfos.stream().collect(Collectors.joining(LINE));
     }
@@ -233,15 +255,10 @@ public class ExceptionNotice implements Serializable {
      * @return 堆栈信息
      */
     public String getDetailTraceInfo() {
-        if (StringUtils.isEmpty(traceInfo)) {
-            return DEFAULT_INFO;
-        }
-
-        List<String> traceInfos = Arrays.stream(traceInfo.split(TRACE_INFO_LINE)).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(traceInfos)) {
+        if (CollectionUtils.isEmpty(stackTraceElementProxys)) {
             return traceInfo;
         }
-        return traceInfos.stream().collect(Collectors.joining(LINE));
+        return stackTraceElementProxys.stream().collect(Collectors.joining(LINE));
     }
 
     /**
@@ -250,7 +267,7 @@ public class ExceptionNotice implements Serializable {
      * @return 是否首次
      */
     public boolean isFirst() {
-        return Objects.equals(firstShowTime, latestShowTime);
+        return Objects.equals(showCount, 1L);
     }
 
     /**

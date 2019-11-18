@@ -5,7 +5,7 @@
 
     <groupId>com.logpolice</groupId>
     <artifactId>logpolice-spring-boot-starter</artifactId>
-    <version>1.0.2-acm</version>
+    <version>1.0.4-acm</version>
     <packaging>jar</packaging>
 
     <name>logpolice-spring-boot-starter</name>
