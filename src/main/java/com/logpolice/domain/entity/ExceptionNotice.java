@@ -171,6 +171,7 @@ public class ExceptionNotice implements Serializable {
                         && Objects.nonNull(s.getStackTraceElement().getFileName()))
                 .findFirst()
                 .ifPresent(s -> this.methodName = s.getStackTraceElement().getMethodName());
+        this.exceptionClassName = throwableProxy.getClassName();
     }
 
     /**
