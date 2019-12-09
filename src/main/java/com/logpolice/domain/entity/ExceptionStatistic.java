@@ -27,6 +27,12 @@ public class ExceptionStatistic implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 唯一id
+     */
+    @Getter
+    private String openId;
+
+    /**
      * 异常出现次数
      */
     @Getter
@@ -37,12 +43,6 @@ public class ExceptionStatistic implements Serializable {
      */
     @Getter
     private Integer lastShowedCount;
-
-    /**
-     * 唯一id
-     */
-    @Getter
-    private String openId;
 
     /**
      * 首次异常时间

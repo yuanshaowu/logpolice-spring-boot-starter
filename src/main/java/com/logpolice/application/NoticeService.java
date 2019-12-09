@@ -45,6 +45,7 @@ public class NoticeService {
         String openId = exceptionNotice.getOpenId();
         ExceptionStatistic exceptionStatistic = statisticRepository.findByOpenId(openId)
                 .orElse(new ExceptionStatistic(openId));
+        statisticRepository.save(openId, exceptionStatistic);
 
         // 判断异常数据是否超时重置
         if (exceptionStatistic.isTimeOut(logpoliceProperties.getCleanTimeInterval())) {

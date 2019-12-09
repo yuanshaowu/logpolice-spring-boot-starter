@@ -35,11 +35,11 @@ public class ExceptionStatisticLocalCache implements ExceptionStatisticRepositor
         if (Objects.isNull(exceptionStatistic)) {
             return Optional.empty();
         }
-        return Optional.of(new ExceptionStatistic(exceptionStatistic.getShowCount(),
-                exceptionStatistic.getOpenId(),
+        return Optional.of(new ExceptionStatistic(exceptionStatistic.getOpenId(),
+                exceptionStatistic.getShowCount(),
+                exceptionStatistic.getLastShowedCount(),
                 exceptionStatistic.getFirstTime(),
-                exceptionStatistic.getNoticeTime(),
-                exceptionStatistic.getLastShowedCount()));
+                exceptionStatistic.getNoticeTime()));
     }
 
     @Override
