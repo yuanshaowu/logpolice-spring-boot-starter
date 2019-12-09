@@ -41,8 +41,8 @@ public class NoticeService {
             return;
         }
 
+        // 查询异常数据，不存在则初始化
         ExceptionStatisticRepository statisticRepository = getExceptionStatisticRepository(logpoliceProperties.getEnableRedisStorage());
-
         String openId = exceptionNotice.getOpenId();
         ExceptionStatistic exceptionStatistic = statisticRepository.findByOpenId(openId)
                 .orElse(new ExceptionStatistic(openId));

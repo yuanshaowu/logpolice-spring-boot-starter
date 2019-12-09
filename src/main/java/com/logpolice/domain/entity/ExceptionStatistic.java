@@ -118,7 +118,7 @@ public class ExceptionStatistic implements Serializable {
     }
 
     /**
-     * 更新版本号
+     * 获取版本号
      *
      * @return 版本号
      */
