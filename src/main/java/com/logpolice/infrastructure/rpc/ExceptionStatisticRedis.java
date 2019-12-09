@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
 
+    private final String REDIS_VERSION_KEY = "_version";
+
     private final RedisTemplate<String, Object> redisTemplate;
 
     public ExceptionStatisticRedis(RedisTemplate<String, Object> redisTemplate) {
@@ -42,7 +44,14 @@ public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
     }
 
     @Override
-    public void save(String openId, ExceptionStatistic exceptionStatistic) {
-        redisTemplate.opsForValue().set(openId, exceptionStatistic, LogpoliceConstant.CLEAN_TIME_INTERVAL, TimeUnit.SECONDS);
+    public boolean save(String openId, String version, ExceptionStatistic exceptionStatistic) {
+        String redisVersionKey = openId + REDIS_VERSION_KEY;
+        Object remoteVersion = redisTemplate.opsForValue().get(redisVersionKey);
+        if (Objects.isNull(remoteVersion) || Objects.equals(String.valueOf(remoteVersion), version)) {
+            redisTemplate.opsForValue().set(openId, exceptionStatistic, LogpoliceConstant.CLEAN_TIME_INTERVAL, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(redisVersionKey, exceptionStatistic.getVersion(), LogpoliceConstant.CLEAN_TIME_INTERVAL, TimeUnit.SECONDS);
+            return true;
+        }
+        return false;
     }
 }

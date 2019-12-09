@@ -19,6 +19,6 @@ public class LogpoliceLoclCacheAutoConfiguration {
 
     @Bean
     public ExceptionStatisticLocalCache exceptionStatisticLocalCache() {
-        return new ExceptionStatisticLocalCache(new ConcurrentHashMap<>());
+        return new ExceptionStatisticLocalCache(new ConcurrentHashMap<>(), new ConcurrentHashMap<>());
     }
 }

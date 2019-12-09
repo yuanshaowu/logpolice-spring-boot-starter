@@ -26,18 +26,18 @@ import java.util.stream.Collectors;
         LogpoliceMailAutoConfiguration.class, LogpoliceDingDingAutoConfiguration.class})
 public class LogpoliceServiceAutoConfiguration {
 
-    private final List<ExceptionNoticeRepository> exceptionNoticeRepositorys;
-    private final List<ExceptionStatisticRepository> exceptionStatisticRepositorys;
+    private final List<ExceptionNoticeRepository> exceptionNoticeRepositories;
+    private final List<ExceptionStatisticRepository> exceptionStatisticRepositories;
 
     @Autowired
-    public LogpoliceServiceAutoConfiguration(List<ExceptionNoticeRepository> exceptionNoticeRepositorys,
-                                             List<ExceptionStatisticRepository> exceptionStatisticRepositorys) {
-        this.exceptionNoticeRepositorys = exceptionNoticeRepositorys;
-        this.exceptionStatisticRepositorys = exceptionStatisticRepositorys;
+    public LogpoliceServiceAutoConfiguration(List<ExceptionNoticeRepository> exceptionNoticeRepositories,
+                                             List<ExceptionStatisticRepository> exceptionStatisticRepositories) {
+        this.exceptionNoticeRepositories = exceptionNoticeRepositories;
+        this.exceptionStatisticRepositories = exceptionStatisticRepositories;
     }
 
     @Bean
     public NoticeService noticeService() {
-        return new NoticeService(exceptionNoticeRepositorys, exceptionStatisticRepositorys);
+        return new NoticeService(exceptionNoticeRepositories, exceptionStatisticRepositories);
     }
 }

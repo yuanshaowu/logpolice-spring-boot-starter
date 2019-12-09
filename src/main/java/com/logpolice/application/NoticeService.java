@@ -23,58 +23,71 @@ import java.util.Objects;
 @Slf4j
 public class NoticeService {
 
-    private final List<ExceptionNoticeRepository> exceptionNoticeRepositorys;
-    private final List<ExceptionStatisticRepository> exceptionStatisticRepositorys;
+    private final int SELF_SPIN_MAX_COUNT = 3;
 
-    public NoticeService(List<ExceptionNoticeRepository> exceptionNoticeRepositorys,
-                         List<ExceptionStatisticRepository> exceptionStatisticRepositorys) {
-        this.exceptionNoticeRepositorys = exceptionNoticeRepositorys;
-        this.exceptionStatisticRepositorys = exceptionStatisticRepositorys;
+    private final List<ExceptionNoticeRepository> exceptionNoticeRepositories;
+    private final List<ExceptionStatisticRepository> exceptionStatisticRepositories;
+
+    public NoticeService(List<ExceptionNoticeRepository> exceptionNoticeRepositories,
+                         List<ExceptionStatisticRepository> exceptionStatisticRepositories) {
+        this.exceptionNoticeRepositories = exceptionNoticeRepositories;
+        this.exceptionStatisticRepositories = exceptionStatisticRepositories;
     }
 
-    public void send(ExceptionNotice exceptionNotice, LogpoliceProperties logpoliceProperties) {
+    public void send(ExceptionNotice exceptionNotice, LogpoliceProperties logpoliceProperties, Integer selfSpinCount) {
         // 判断是否包含白名单
         if (exceptionNotice.containsWhiteList(logpoliceProperties.getExceptionWhiteList(), logpoliceProperties.getClassWhiteList())) {
             log.warn("logSendAppender.append exceptionWhiteList skip, exception:{}", exceptionNotice);
             return;
         }
 
-        ExceptionNoticeRepository noticeRepository = getExceptionNoticeRepository(logpoliceProperties.getNoticeSendType());
         ExceptionStatisticRepository statisticRepository = getExceptionStatisticRepository(logpoliceProperties.getEnableRedisStorage());
 
         String openId = exceptionNotice.getOpenId();
         ExceptionStatistic exceptionStatistic = statisticRepository.findByOpenId(openId)
                 .orElse(new ExceptionStatistic(openId));
-        statisticRepository.save(openId, exceptionStatistic);
+        String version = exceptionStatistic.getVersion();
 
         // 判断异常数据是否超时重置
         if (exceptionStatistic.isTimeOut(logpoliceProperties.getCleanTimeInterval())) {
-            log.info("noticeService.send timeOut,prepare resetData openId:{}", openId);
+            log.info("noticeService.send timeOut, prepare resetData openId:{}", openId);
             exceptionStatistic.reset();
         }
         exceptionStatistic.pushOne();
 
         // 判断异常数据是否符合推送
-        if (NoticeFrequencyType.check(exceptionStatistic, logpoliceProperties)) {
+        Boolean isCheck;
+        if (isCheck = NoticeFrequencyType.check(exceptionStatistic, logpoliceProperties)) {
             log.info("noticeService.send prepare, openId:{}", openId);
             exceptionStatistic.updateData();
             exceptionNotice.updateData(exceptionStatistic.getShowCount(),
                     exceptionStatistic.getNoticeTime(),
                     exceptionStatistic.getFirstTime());
-            noticeRepository.send(exceptionNotice);
         }
-        statisticRepository.save(openId, exceptionStatistic);
+        boolean success = statisticRepository.save(openId, version, exceptionStatistic);
+
+        // 判断数据持久化失败，尝试自旋3次
+        if (!success && selfSpinCount <= SELF_SPIN_MAX_COUNT) {
+            send(exceptionNotice, logpoliceProperties, selfSpinCount + 1);
+        }
+
+        // 判断是否通过校验，数据持久化成功
+        if (success && isCheck) {
+            ExceptionNoticeRepository noticeRepository = getExceptionNoticeRepository(logpoliceProperties.getNoticeSendType());
+            noticeRepository.send(exceptionNotice);
+            log.info("noticeService.send success, openId:{}", openId);
+        }
     }
 
     private ExceptionNoticeRepository getExceptionNoticeRepository(NoticeSendEnum noticeSendEnum) {
-        return exceptionNoticeRepositorys.stream()
+        return exceptionNoticeRepositories.stream()
                 .filter(e -> Objects.equals(e.getType(), noticeSendEnum))
                 .findFirst()
                 .orElseThrow(() -> new RepositoryNotExistException("noticeService.getExceptionNoticeRepository not exist"));
     }
 
     private ExceptionStatisticRepository getExceptionStatisticRepository(Boolean enableRedisStorage) {
-        return exceptionStatisticRepositorys.stream()
+        return exceptionStatisticRepositories.stream()
                 .filter(e -> Objects.equals(e.getType(), NoticeRepositoryEnum.getType(enableRedisStorage)))
                 .findFirst()
                 .orElseThrow(() -> new RepositoryNotExistException("noticeService.getExceptionStatisticRepository not exist"));

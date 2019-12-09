@@ -4,6 +4,7 @@ import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
 import com.logpolice.infrastructure.enums.NoticeRepositoryEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -18,10 +19,13 @@ import java.util.Optional;
 @Slf4j
 public class ExceptionStatisticLocalCache implements ExceptionStatisticRepository {
 
-    private Map<String, ExceptionStatistic> checkOpenId;
+    private Map<String, ExceptionStatistic> exceptionStatisticMap;
+    private Map<String, String> exceptionVersionMap;
 
-    public ExceptionStatisticLocalCache(Map<String, ExceptionStatistic> checkOpenId) {
-        this.checkOpenId = checkOpenId;
+    public ExceptionStatisticLocalCache(Map<String, ExceptionStatistic> exceptionStatisticMap,
+                                        Map<String, String> exceptionVersionMap) {
+        this.exceptionStatisticMap = exceptionStatisticMap;
+        this.exceptionVersionMap = exceptionVersionMap;
     }
 
     @Override
@@ -31,7 +35,7 @@ public class ExceptionStatisticLocalCache implements ExceptionStatisticRepositor
 
     @Override
     public Optional<ExceptionStatistic> findByOpenId(String openId) {
-        ExceptionStatistic exceptionStatistic = checkOpenId.get(openId);
+        ExceptionStatistic exceptionStatistic = exceptionStatisticMap.get(openId);
         if (Objects.isNull(exceptionStatistic)) {
             return Optional.empty();
         }
@@ -43,7 +47,13 @@ public class ExceptionStatisticLocalCache implements ExceptionStatisticRepositor
     }
 
     @Override
-    public void save(String openId, ExceptionStatistic exceptionStatistic) {
-        checkOpenId.put(openId, exceptionStatistic);
+    public boolean save(String openId, String version, ExceptionStatistic exceptionStatistic) {
+        String remoteVersion = exceptionVersionMap.get(openId);
+        if (StringUtils.isEmpty(remoteVersion) || Objects.equals(remoteVersion, version)) {
+            exceptionStatisticMap.put(openId, exceptionStatistic);
+            exceptionVersionMap.put(openId, exceptionStatistic.getVersion());
+            return true;
+        }
+        return false;
     }
 }

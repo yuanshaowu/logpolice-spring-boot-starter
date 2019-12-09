@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.util.DigestUtils;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -114,5 +115,15 @@ public class ExceptionStatistic implements Serializable {
     public Boolean isTimeOut(Long cleanTimeInterval) {
         Duration dur = Duration.between(firstTime, LocalDateTime.now());
         return Duration.ofSeconds(cleanTimeInterval).compareTo(dur) < 0;
+    }
+
+    /**
+     * 更新版本号
+     *
+     * @return 版本号
+     */
+    public String getVersion() {
+        String openIdStr = String.format("%s-%s-%s", openId, showCount, lastShowedCount);
+        return DigestUtils.md5DigestAsHex(openIdStr.getBytes());
     }
 }

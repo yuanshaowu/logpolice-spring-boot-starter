@@ -46,7 +46,7 @@ public class LogSendAppender extends UnsynchronizedAppenderBase<LoggingEvent> {
                     layout.doLayout(eventObject),
                     eventObject,
                     logpoliceProperties.getExceptionRedisKey());
-            noticeService.send(exceptionNotice, logpoliceProperties);
+            noticeService.send(exceptionNotice, logpoliceProperties, 1);
         }
     }
 }

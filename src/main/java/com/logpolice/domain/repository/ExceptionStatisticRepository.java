@@ -32,7 +32,8 @@ public interface ExceptionStatisticRepository {
      * 保存异常统计
      *
      * @param openId             唯一标识
+     * @param version            版本号
      * @param exceptionStatistic 异常统计
      */
-    void save(String openId, ExceptionStatistic exceptionStatistic);
+    boolean save(String openId, String version, ExceptionStatistic exceptionStatistic);
 }
