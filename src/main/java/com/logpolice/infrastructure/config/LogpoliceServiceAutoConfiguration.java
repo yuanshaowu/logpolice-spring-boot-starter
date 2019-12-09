@@ -38,10 +38,6 @@ public class LogpoliceServiceAutoConfiguration {
 
     @Bean
     public NoticeService noticeService() {
-        Map<NoticeSendEnum, ExceptionNoticeRepository> exceptionNoticeRepositoryMap = exceptionNoticeRepositorys.stream()
-                .collect(Collectors.toMap(ExceptionNoticeRepository::getType, Function.identity()));
-        Map<NoticeRepositoryEnum, ExceptionStatisticRepository> exceptionStatisticRepositoryMap = exceptionStatisticRepositorys
-                .stream().collect(Collectors.toMap(ExceptionStatisticRepository::getType, Function.identity()));
-        return new NoticeService(exceptionNoticeRepositoryMap, exceptionStatisticRepositoryMap);
+        return new NoticeService(exceptionNoticeRepositorys, exceptionStatisticRepositorys);
     }
 }

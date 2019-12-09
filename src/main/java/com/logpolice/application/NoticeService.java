@@ -7,11 +7,12 @@ import com.logpolice.domain.repository.ExceptionNoticeRepository;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
 import com.logpolice.infrastructure.enums.NoticeRepositoryEnum;
 import com.logpolice.infrastructure.enums.NoticeSendEnum;
+import com.logpolice.infrastructure.exception.RepositoryNotExistException;
 import com.logpolice.infrastructure.properties.LogpoliceProperties;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 消息逻辑层
@@ -22,38 +23,59 @@ import java.util.Map;
 @Slf4j
 public class NoticeService {
 
-    private final Map<NoticeSendEnum, ExceptionNoticeRepository> exceptionNoticeRepositoryMap;
-    private final Map<NoticeRepositoryEnum, ExceptionStatisticRepository> exceptionStatisticRepositoryMap;
+    private final List<ExceptionNoticeRepository> exceptionNoticeRepositorys;
+    private final List<ExceptionStatisticRepository> exceptionStatisticRepositorys;
 
-    public NoticeService(Map<NoticeSendEnum, ExceptionNoticeRepository> exceptionNoticeRepositoryMap,
-                         Map<NoticeRepositoryEnum, ExceptionStatisticRepository> exceptionStatisticRepositoryMap) {
-        this.exceptionNoticeRepositoryMap = exceptionNoticeRepositoryMap;
-        this.exceptionStatisticRepositoryMap = exceptionStatisticRepositoryMap;
+    public NoticeService(List<ExceptionNoticeRepository> exceptionNoticeRepositorys,
+                         List<ExceptionStatisticRepository> exceptionStatisticRepositorys) {
+        this.exceptionNoticeRepositorys = exceptionNoticeRepositorys;
+        this.exceptionStatisticRepositorys = exceptionStatisticRepositorys;
     }
 
     public void send(ExceptionNotice exceptionNotice, LogpoliceProperties logpoliceProperties) {
-        ExceptionStatisticRepository exceptionStatisticRepository = exceptionStatisticRepositoryMap.get(
-                NoticeRepositoryEnum.getType(logpoliceProperties.getEnableRedisStorage()));
+        // 判断是否包含白名单
+        if (exceptionNotice.containsWhiteList(logpoliceProperties.getExceptionWhiteList(), logpoliceProperties.getClassWhiteList())) {
+            log.warn("logSendAppender.append exceptionWhiteList skip, exception:{}", exceptionNotice);
+            return;
+        }
 
-        String openId = logpoliceProperties.getExceptionRedisKey() + exceptionNotice.getOpenId();
-        ExceptionStatistic exceptionStatistic = exceptionStatisticRepository.findByOpenId(openId)
+        ExceptionNoticeRepository noticeRepository = getExceptionNoticeRepository(logpoliceProperties.getNoticeSendType());
+        ExceptionStatisticRepository statisticRepository = getExceptionStatisticRepository(logpoliceProperties.getEnableRedisStorage());
+
+        String openId = exceptionNotice.getOpenId();
+        ExceptionStatistic exceptionStatistic = statisticRepository.findByOpenId(openId)
                 .orElse(new ExceptionStatistic(openId));
-        log.info("noticeService.send start, openId:{}, exceptionStatistic:{}", openId, exceptionStatistic);
 
-        if (NoticeFrequencyType.checkTimeOut(exceptionStatistic, logpoliceProperties)) {
+        // 判断异常数据是否超时重置
+        if (exceptionStatistic.isTimeOut(logpoliceProperties.getCleanTimeInterval())) {
             log.info("noticeService.send timeOut,prepare resetData openId:{}", openId);
-            exceptionStatistic.resetData();
+            exceptionStatistic.reset();
         }
-        Long showCount = exceptionStatistic.pushOne();
+        exceptionStatistic.pushOne();
 
-        NoticeFrequencyType frequencyType = logpoliceProperties.getFrequencyType();
-        if (exceptionStatistic.isFirst() || frequencyType.checkSend(exceptionStatistic, logpoliceProperties)) {
+        // 判断异常数据是否符合推送
+        if (NoticeFrequencyType.check(exceptionStatistic, logpoliceProperties)) {
             log.info("noticeService.send prepare, openId:{}", openId);
-            LocalDateTime now = LocalDateTime.now();
-            exceptionStatistic.updateData(showCount, now);
-            exceptionNotice.updateData(showCount, now, exceptionStatistic.getFirstTime());
-            exceptionNoticeRepositoryMap.get(logpoliceProperties.getNoticeSendType()).send(exceptionNotice);
+            exceptionStatistic.updateData();
+            exceptionNotice.updateData(exceptionStatistic.getShowCount(),
+                    exceptionStatistic.getNoticeTime(),
+                    exceptionStatistic.getFirstTime());
+            noticeRepository.send(exceptionNotice);
         }
-        exceptionStatisticRepository.save(openId, exceptionStatistic);
+        statisticRepository.save(openId, exceptionStatistic);
+    }
+
+    private ExceptionNoticeRepository getExceptionNoticeRepository(NoticeSendEnum noticeSendEnum) {
+        return exceptionNoticeRepositorys.stream()
+                .filter(e -> Objects.equals(e.getType(), noticeSendEnum))
+                .findFirst()
+                .orElseThrow(() -> new RepositoryNotExistException("noticeService.getExceptionNoticeRepository not exist"));
+    }
+
+    private ExceptionStatisticRepository getExceptionStatisticRepository(Boolean enableRedisStorage) {
+        return exceptionStatisticRepositorys.stream()
+                .filter(e -> Objects.equals(e.getType(), NoticeRepositoryEnum.getType(enableRedisStorage)))
+                .findFirst()
+                .orElseThrow(() -> new RepositoryNotExistException("noticeService.getExceptionStatisticRepository not exist"));
     }
 }

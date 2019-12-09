@@ -6,9 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 异常信息统计
@@ -30,7 +30,13 @@ public class ExceptionStatistic implements Serializable {
      * 异常出现次数
      */
     @Getter
-    private AtomicLong showCount;
+    private Integer showCount;
+
+    /**
+     * 上一次通知时的次数
+     */
+    @Getter
+    private Integer lastShowedCount;
 
     /**
      * 唯一id
@@ -51,19 +57,13 @@ public class ExceptionStatistic implements Serializable {
     private LocalDateTime noticeTime;
 
     /**
-     * 上一次通知时的次数
-     */
-    @Getter
-    private Long lastShowedCount;
-
-    /**
      * 创建异常统计
      *
      * @param openId 唯一标识
      */
     public ExceptionStatistic(String openId) {
-        this.showCount = new AtomicLong(0);
-        this.lastShowedCount = 0L;
+        this.showCount = 0;
+        this.lastShowedCount = 0;
         this.openId = openId;
         LocalDateTime now = LocalDateTime.now();
         this.firstTime = now;
@@ -73,9 +73,9 @@ public class ExceptionStatistic implements Serializable {
     /**
      * 重置数据
      */
-    public void resetData() {
-        this.showCount = new AtomicLong(1);
-        this.lastShowedCount = 1L;
+    public void reset() {
+        this.showCount = 0;
+        this.lastShowedCount = 0;
         LocalDateTime now = LocalDateTime.now();
         this.firstTime = now;
         this.noticeTime = now;
@@ -92,21 +92,27 @@ public class ExceptionStatistic implements Serializable {
 
     /**
      * 追加统计次数
-     *
-     * @return 追加统计次数
      */
-    public Long pushOne() {
-        return showCount.incrementAndGet();
+    public void pushOne() {
+        showCount += 1;
     }
 
     /**
      * 更新数据
-     *
-     * @param lastShowedCount 上一次通知时的次数
-     * @param noticeTime      异常通知的时间
      */
-    public void updateData(Long lastShowedCount, LocalDateTime noticeTime) {
-        this.lastShowedCount = lastShowedCount;
-        this.noticeTime = noticeTime;
+    public void updateData() {
+        this.lastShowedCount = showCount;
+        this.noticeTime = LocalDateTime.now();
+    }
+
+    /**
+     * 是否超时过期
+     *
+     * @param cleanTimeInterval 超时时间
+     * @return 过期
+     */
+    public Boolean isTimeOut(Long cleanTimeInterval) {
+        Duration dur = Duration.between(firstTime, LocalDateTime.now());
+        return Duration.ofSeconds(cleanTimeInterval).compareTo(dur) < 0;
     }
 }

@@ -40,15 +40,12 @@ public class LogSendAppender extends UnsynchronizedAppenderBase<LoggingEvent> {
                 return;
             }
 
-            ExceptionNotice exceptionNotice = new ExceptionNotice(logpoliceProperties.getAppCode(),
-                    logpoliceProperties.getLocalIp(), layout.doLayout(eventObject), eventObject);
-
-            if (exceptionNotice.isSkip(logpoliceProperties.getExceptionWhiteList(), logpoliceProperties.getClassWhiteList())) {
-                log.warn("logSendAppender.append exceptionWhiteList skip, exception:{}", exceptionNotice);
-                return;
-            }
-
             NoticeService noticeService = ApplicationContextProvider.getBean(NoticeService.class);
+            ExceptionNotice exceptionNotice = new ExceptionNotice(logpoliceProperties.getAppCode(),
+                    logpoliceProperties.getLocalIp(),
+                    layout.doLayout(eventObject),
+                    eventObject,
+                    logpoliceProperties.getExceptionRedisKey());
             noticeService.send(exceptionNotice, logpoliceProperties);
         }
     }

@@ -139,8 +139,9 @@ public class ExceptionNotice implements Serializable {
      * @param projectAddress 工程地址
      * @param traceInfo      堆栈
      * @param eventObject    事件对象
+     * @param cacheKey       缓存key
      */
-    public ExceptionNotice(String project, String projectAddress, String traceInfo, LoggingEvent eventObject) {
+    public ExceptionNotice(String project, String projectAddress, String traceInfo, LoggingEvent eventObject, String cacheKey) {
         this.project = project;
         this.projectAddress = projectAddress;
         this.classPath = eventObject.getLoggerName();
@@ -158,7 +159,7 @@ public class ExceptionNotice implements Serializable {
             updateStackTraceElementProxys(throwableProxy);
             this.exceptionClassName = throwableProxy.getClassName();
         }
-        this.openId = calOpenId();
+        this.openId = calOpenId(cacheKey);
     }
 
     /**
@@ -194,10 +195,12 @@ public class ExceptionNotice implements Serializable {
     /**
      * MD5异常key
      *
+     * @param cacheKey 缓存key
      * @return key
      */
-    private String calOpenId() {
-        return DigestUtils.md5DigestAsHex(String.format("%s-%s-%s", classPath, methodName, exceptionClassName).getBytes());
+    private String calOpenId(String cacheKey) {
+        String openIdStr = String.format("%s-%s-%s-%s", classPath, methodName, exceptionClassName, cacheKey);
+        return DigestUtils.md5DigestAsHex(openIdStr.getBytes());
     }
 
     /**
@@ -207,7 +210,7 @@ public class ExceptionNotice implements Serializable {
      * @param latestShowTime 最后一次出现的时间
      * @param firstShowTime  日志保留时间
      */
-    public void updateData(Long showCount, LocalDateTime latestShowTime, LocalDateTime firstShowTime) {
+    public void updateData(Integer showCount, LocalDateTime latestShowTime, LocalDateTime firstShowTime) {
         this.showCount = Math.max(this.showCount, showCount);
         this.latestShowTime = latestShowTime;
         this.firstShowTime = isFirst() ? latestShowTime : firstShowTime;
@@ -278,7 +281,7 @@ public class ExceptionNotice implements Serializable {
      * @param classWhiteList     类白名单
      * @return 布尔
      */
-    public boolean isSkip(Set<String> exceptionWhiteList, Set<String> classWhiteList) {
+    public boolean containsWhiteList(Set<String> exceptionWhiteList, Set<String> classWhiteList) {
         if (!CollectionUtils.isEmpty(exceptionWhiteList) && !StringUtils.isEmpty(exceptionClassName)) {
             return exceptionWhiteList.contains(exceptionClassName);
         }
