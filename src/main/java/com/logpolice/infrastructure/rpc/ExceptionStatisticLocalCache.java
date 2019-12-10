@@ -19,8 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class ExceptionStatisticLocalCache implements ExceptionStatisticRepository {
 
-    private final int VERSION_MAX = 20;
-
     private final Map<String, ExceptionStatistic> exceptionStatisticMap;
     private final Map<String, AtomicInteger> exceptionVersionMap;
 
@@ -64,7 +62,8 @@ public class ExceptionStatisticLocalCache implements ExceptionStatisticRepositor
         if (remoteVersion == 1) {
             return true;
         }
-        if (remoteVersion > VERSION_MAX) {
+        int versionMax = 20;
+        if (remoteVersion > versionMax) {
             exceptionVersionMap.remove(openId);
         }
         return false;
@@ -73,4 +72,5 @@ public class ExceptionStatisticLocalCache implements ExceptionStatisticRepositor
     private void unlock(String openId) {
         exceptionVersionMap.remove(openId);
     }
+
 }

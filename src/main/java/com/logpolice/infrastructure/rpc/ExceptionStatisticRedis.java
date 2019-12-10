@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
 
-    private final long VERSION_MAX = 20L;
+    private final String REDIS_KEY_VERSION = "_version";
 
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -58,18 +58,19 @@ public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
 
     private boolean lock(String openId) {
         Long increment = 1L;
-        String redisKey = openId + "_version";
+        String redisKey = openId + REDIS_KEY_VERSION;
         Long remoteVersion = redisTemplate.opsForValue().increment(redisKey, increment);
         if (Objects.equals(remoteVersion, increment)) {
             return true;
         }
-        if (remoteVersion > VERSION_MAX) {
+        long versionMax = 20L;
+        if (remoteVersion > versionMax) {
             redisTemplate.delete(redisKey);
         }
         return false;
     }
 
     private void unlock(String openId) {
-        redisTemplate.delete(openId + "_version");
+        redisTemplate.delete(openId + REDIS_KEY_VERSION);
     }
 }
