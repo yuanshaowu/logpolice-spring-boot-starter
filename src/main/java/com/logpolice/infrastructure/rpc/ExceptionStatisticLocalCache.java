@@ -4,11 +4,11 @@ import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
 import com.logpolice.infrastructure.enums.NoticeRepositoryEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 异常统计本地缓存
@@ -19,11 +19,13 @@ import java.util.Optional;
 @Slf4j
 public class ExceptionStatisticLocalCache implements ExceptionStatisticRepository {
 
-    private Map<String, ExceptionStatistic> exceptionStatisticMap;
-    private Map<String, String> exceptionVersionMap;
+    private final int VERSION_MAX = 20;
+
+    private final Map<String, ExceptionStatistic> exceptionStatisticMap;
+    private final Map<String, AtomicInteger> exceptionVersionMap;
 
     public ExceptionStatisticLocalCache(Map<String, ExceptionStatistic> exceptionStatisticMap,
-                                        Map<String, String> exceptionVersionMap) {
+                                        Map<String, AtomicInteger> exceptionVersionMap) {
         this.exceptionStatisticMap = exceptionStatisticMap;
         this.exceptionVersionMap = exceptionVersionMap;
     }
@@ -47,13 +49,28 @@ public class ExceptionStatisticLocalCache implements ExceptionStatisticRepositor
     }
 
     @Override
-    public boolean save(String openId, String version, ExceptionStatistic exceptionStatistic) {
-        String remoteVersion = exceptionVersionMap.get(openId);
-        if (StringUtils.isEmpty(remoteVersion) || Objects.equals(remoteVersion, version)) {
+    public boolean save(String openId, ExceptionStatistic exceptionStatistic) {
+        boolean lock;
+        if (lock = lock(openId)) {
             exceptionStatisticMap.put(openId, exceptionStatistic);
-            exceptionVersionMap.put(openId, exceptionStatistic.getVersion());
+            unlock(openId);
+        }
+        return lock;
+    }
+
+    private boolean lock(String openId) {
+        AtomicInteger version = exceptionVersionMap.computeIfAbsent(openId, v -> new AtomicInteger(0));
+        int remoteVersion = version.incrementAndGet();
+        if (remoteVersion == 1) {
             return true;
         }
+        if (remoteVersion > VERSION_MAX) {
+            exceptionVersionMap.remove(openId);
+        }
         return false;
+    }
+
+    private void unlock(String openId) {
+        exceptionVersionMap.remove(openId);
     }
 }

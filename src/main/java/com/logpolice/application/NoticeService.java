@@ -23,8 +23,6 @@ import java.util.Objects;
 @Slf4j
 public class NoticeService {
 
-    private final int SELF_SPIN_MAX_COUNT = 3;
-
     private final List<ExceptionNoticeRepository> exceptionNoticeRepositories;
     private final List<ExceptionStatisticRepository> exceptionStatisticRepositories;
 
@@ -34,7 +32,7 @@ public class NoticeService {
         this.exceptionStatisticRepositories = exceptionStatisticRepositories;
     }
 
-    public void send(ExceptionNotice exceptionNotice, LogpoliceProperties logpoliceProperties, Integer selfSpinCount) {
+    public void send(ExceptionNotice exceptionNotice, LogpoliceProperties logpoliceProperties) {
         // 判断是否包含白名单
         if (exceptionNotice.containsWhiteList(logpoliceProperties.getExceptionWhiteList(), logpoliceProperties.getClassWhiteList())) {
             log.warn("logSendAppender.append exceptionWhiteList skip, exception:{}", exceptionNotice);
@@ -46,7 +44,6 @@ public class NoticeService {
         String openId = exceptionNotice.getOpenId();
         ExceptionStatistic exceptionStatistic = statisticRepository.findByOpenId(openId)
                 .orElse(new ExceptionStatistic(openId));
-        String version = exceptionStatistic.getVersion();
 
         // 判断异常数据是否超时重置
         if (exceptionStatistic.isTimeOut(logpoliceProperties.getCleanTimeInterval())) {
@@ -56,7 +53,7 @@ public class NoticeService {
         exceptionStatistic.pushOne();
 
         // 判断异常数据是否符合推送
-        Boolean isCheck;
+        boolean isCheck;
         if (isCheck = NoticeFrequencyType.check(exceptionStatistic, logpoliceProperties)) {
             log.info("noticeService.send prepare, openId:{}", openId);
             exceptionStatistic.updateData();
@@ -64,12 +61,7 @@ public class NoticeService {
                     exceptionStatistic.getNoticeTime(),
                     exceptionStatistic.getFirstTime());
         }
-        boolean success = statisticRepository.save(openId, version, exceptionStatistic);
-
-        // 判断数据持久化失败，尝试自旋3次
-        if (!success && selfSpinCount <= SELF_SPIN_MAX_COUNT) {
-            send(exceptionNotice, logpoliceProperties, selfSpinCount + 1);
-        }
+        boolean success = statisticRepository.save(openId, exceptionStatistic);
 
         // 判断是否通过校验，数据持久化成功
         if (success && isCheck) {
