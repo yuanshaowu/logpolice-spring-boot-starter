@@ -14,7 +14,7 @@ import java.util.Objects;
  */
 @Getter
 @AllArgsConstructor
-public enum NoticeRepositoryEnum {
+public enum NoticeDbTypeEnum {
 
     /**
      * LOCAL_CACHE：本地
@@ -25,9 +25,9 @@ public enum NoticeRepositoryEnum {
 
     private Boolean enableRedisStorage;
 
-    public static NoticeRepositoryEnum getType(Boolean enableRedisStorage) {
-        return Arrays.stream(NoticeRepositoryEnum.values())
+    public static NoticeDbTypeEnum getType(Boolean enableRedisStorage) {
+        return Arrays.stream(NoticeDbTypeEnum.values())
                 .filter(n -> Objects.equals(n.getEnableRedisStorage(), enableRedisStorage)).findFirst()
-                .orElse(NoticeRepositoryEnum.LOCAL_CACHE);
+                .orElse(NoticeDbTypeEnum.LOCAL_CACHE);
     }
 }

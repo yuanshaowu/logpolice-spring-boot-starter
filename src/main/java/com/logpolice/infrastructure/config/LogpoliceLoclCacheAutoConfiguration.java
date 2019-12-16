@@ -1,6 +1,7 @@
 package com.logpolice.infrastructure.config;
 
 import com.logpolice.infrastructure.rpc.ExceptionStatisticLocalCache;
+import com.logpolice.infrastructure.rpc.LockUtilsLocalCache;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,11 @@ public class LogpoliceLoclCacheAutoConfiguration {
 
     @Bean
     public ExceptionStatisticLocalCache exceptionStatisticLocalCache() {
-        return new ExceptionStatisticLocalCache(new ConcurrentHashMap<>(), new ConcurrentHashMap<>());
+        return new ExceptionStatisticLocalCache(new ConcurrentHashMap<>());
+    }
+
+    @Bean
+    public LockUtilsLocalCache lockUtilsLocalCache() {
+        return new LockUtilsLocalCache(new ConcurrentHashMap<>());
     }
 }

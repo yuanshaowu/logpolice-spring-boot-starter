@@ -62,4 +62,9 @@ public class LogpoliceConstant {
      * 邮件规则匹配
      */
     public static final String MAIL_PATTERN_MATCHES = "^[A-Za-z0-9_\\-]+@[a-zA-Z0-9_\\-]+(\\.[a-zA-Z]{2,4})+$";
+
+    /**
+     * 锁最大重试次数
+     */
+    public static final int LOCK_MAX_RETRY_NUM = 3;
 }

@@ -85,7 +85,7 @@
         </encoder>
     </appender>
 
-    <appender name="LogDingDingAppender" class="com.logpolice.port.LogSendAppender"/>
+    <appender name="LogDingDingAppender" class="com.logpolice.port.LogbackAppender"/>
 
     <root level="ERROR">
         <appender-ref ref="LogDingDingAppender"/>
@@ -94,7 +94,7 @@
 ```
 注：如果已有logback.xml，引用LogSendAppender类即可
 ```
-    <appender name="LogDingDingAppender" class="com.logpolice.port.LogSendAppender"/>
+    <appender name="LogDingDingAppender" class="com.logpolice.port.LogbackAppender"/>
 
     <root level="ERROR">
         <appender-ref ref="LogDingDingAppender"/>

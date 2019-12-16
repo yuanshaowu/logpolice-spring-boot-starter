@@ -1,7 +1,7 @@
 package com.logpolice.domain.repository;
 
 import com.logpolice.domain.entity.ExceptionStatistic;
-import com.logpolice.infrastructure.enums.NoticeRepositoryEnum;
+import com.logpolice.infrastructure.enums.NoticeDbTypeEnum;
 
 import java.util.Optional;
 
@@ -18,7 +18,7 @@ public interface ExceptionStatisticRepository {
      *
      * @return 仓储类型
      */
-    NoticeRepositoryEnum getType();
+    NoticeDbTypeEnum getType();
 
     /**
      * 查询异常统计

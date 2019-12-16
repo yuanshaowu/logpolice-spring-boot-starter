@@ -113,6 +113,13 @@ public class ExceptionNotice implements Serializable {
     private List<String> stackTraceElementProxys;
 
     /**
+     * 堆栈信息
+     */
+    @Getter
+    @Transient
+    private boolean send;
+
+    /**
      * 格式化时间
      */
     private final static String DEFAULT_INFO = "未输出堆栈异常信息";
@@ -120,7 +127,7 @@ public class ExceptionNotice implements Serializable {
     /**
      * 异常追踪信息
      */
-    private final static String SIMPLIFY_TRACE_INFO = "...... not first push will show simplify frames omitted";
+    private final static String SIMPLIFY_TRACE_INFO = "...... not first send will show simplify frames omitted";
 
     /**
      * 异常追踪信息最小行数
@@ -160,6 +167,7 @@ public class ExceptionNotice implements Serializable {
             this.exceptionClassName = throwableProxy.getClassName();
         }
         this.openId = calOpenId(cacheKey);
+        this.send = false;
     }
 
     /**
@@ -289,5 +297,15 @@ public class ExceptionNotice implements Serializable {
             return classWhiteList.contains(classPath);
         }
         return false;
+    }
+
+    /**
+     * 更新推送状态
+     *
+     * @param isCheck   是否校验通过
+     * @param isSuccess 是否持久化
+     */
+    public void updateSend(boolean isCheck, boolean isSuccess) {
+        this.send = isCheck && isSuccess;
     }
 }

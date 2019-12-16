@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2019/8/27
  */
 @Slf4j
-public class LogSendAppender extends UnsynchronizedAppenderBase<LoggingEvent> {
+public class LogbackAppender extends UnsynchronizedAppenderBase<LoggingEvent> {
 
     private PatternLayout layout;
 
@@ -46,7 +46,7 @@ public class LogSendAppender extends UnsynchronizedAppenderBase<LoggingEvent> {
                     layout.doLayout(eventObject),
                     eventObject,
                     logpoliceProperties.getExceptionRedisKey());
-            noticeService.send(exceptionNotice, logpoliceProperties);
+            noticeService.send(exceptionNotice, logpoliceProperties, 0);
         }
     }
 }

@@ -5,10 +5,12 @@ import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.entity.NoticeFrequencyType;
 import com.logpolice.domain.repository.ExceptionNoticeRepository;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
-import com.logpolice.infrastructure.enums.NoticeRepositoryEnum;
+import com.logpolice.infrastructure.enums.NoticeDbTypeEnum;
 import com.logpolice.infrastructure.enums.NoticeSendEnum;
 import com.logpolice.infrastructure.exception.RepositoryNotExistException;
+import com.logpolice.infrastructure.properties.LogpoliceConstant;
 import com.logpolice.infrastructure.properties.LogpoliceProperties;
+import com.logpolice.infrastructure.utils.LockUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -25,22 +27,51 @@ public class NoticeService {
 
     private final List<ExceptionNoticeRepository> exceptionNoticeRepositories;
     private final List<ExceptionStatisticRepository> exceptionStatisticRepositories;
+    private final List<LockUtils> lockUtils;
 
     public NoticeService(List<ExceptionNoticeRepository> exceptionNoticeRepositories,
-                         List<ExceptionStatisticRepository> exceptionStatisticRepositories) {
+                         List<ExceptionStatisticRepository> exceptionStatisticRepositories,
+                         List<LockUtils> lockUtils) {
         this.exceptionNoticeRepositories = exceptionNoticeRepositories;
         this.exceptionStatisticRepositories = exceptionStatisticRepositories;
+        this.lockUtils = lockUtils;
     }
 
-    public void send(ExceptionNotice exceptionNotice, LogpoliceProperties logpoliceProperties) {
+    public void send(ExceptionNotice exceptionNotice, LogpoliceProperties logpoliceProperties, int currentRetryNum) {
+        boolean lock;
+        currentRetryNum += 1;
+        String openId = exceptionNotice.getOpenId();
+        LockUtils lockUtils = this.getLockUtils(logpoliceProperties.getEnableRedisStorage());
+
+        // 判断加锁状态，递归最多重试三次
+        if (lock = lockUtils.lock(openId)) {
+            try {
+                exceptionNotice = this.create(exceptionNotice, logpoliceProperties);
+            } finally {
+                lockUtils.unlock(openId);
+            }
+        }
+        if (!lock && currentRetryNum <= LogpoliceConstant.LOCK_MAX_RETRY_NUM) {
+            this.send(exceptionNotice, logpoliceProperties, currentRetryNum);
+        }
+
+        // 判断是否符合推送条件，可以优化异步推送
+        if (lock && exceptionNotice.isSend()) {
+            ExceptionNoticeRepository noticeRepository = this.getExceptionNoticeRepository(logpoliceProperties.getNoticeSendType());
+            noticeRepository.send(exceptionNotice);
+            log.info("noticeService.send success, openId:{}", openId);
+        }
+    }
+
+    private ExceptionNotice create(ExceptionNotice exceptionNotice, LogpoliceProperties logpoliceProperties) {
         // 判断是否包含白名单
         if (exceptionNotice.containsWhiteList(logpoliceProperties.getExceptionWhiteList(), logpoliceProperties.getClassWhiteList())) {
             log.warn("logSendAppender.append exceptionWhiteList skip, exception:{}", exceptionNotice);
-            return;
+            return exceptionNotice;
         }
 
         // 查询异常数据，不存在则初始化
-        ExceptionStatisticRepository statisticRepository = getExceptionStatisticRepository(logpoliceProperties.getEnableRedisStorage());
+        ExceptionStatisticRepository statisticRepository = this.getExceptionStatisticRepository(logpoliceProperties.getEnableRedisStorage());
         String openId = exceptionNotice.getOpenId();
         ExceptionStatistic exceptionStatistic = statisticRepository.findByOpenId(openId)
                 .orElse(new ExceptionStatistic(openId));
@@ -61,14 +92,9 @@ public class NoticeService {
                     exceptionStatistic.getNoticeTime(),
                     exceptionStatistic.getFirstTime());
         }
-        boolean success = statisticRepository.save(openId, exceptionStatistic);
-
-        // 判断是否通过校验，数据持久化成功
-        if (success && isCheck) {
-            ExceptionNoticeRepository noticeRepository = getExceptionNoticeRepository(logpoliceProperties.getNoticeSendType());
-            noticeRepository.send(exceptionNotice);
-            log.info("noticeService.send success, openId:{}", openId);
-        }
+        boolean isSuccess = statisticRepository.save(openId, exceptionStatistic);
+        exceptionNotice.updateSend(isCheck, isSuccess);
+        return exceptionNotice;
     }
 
     private ExceptionNoticeRepository getExceptionNoticeRepository(NoticeSendEnum noticeSendEnum) {
@@ -80,7 +106,14 @@ public class NoticeService {
 
     private ExceptionStatisticRepository getExceptionStatisticRepository(Boolean enableRedisStorage) {
         return exceptionStatisticRepositories.stream()
-                .filter(e -> Objects.equals(e.getType(), NoticeRepositoryEnum.getType(enableRedisStorage)))
+                .filter(e -> Objects.equals(e.getType(), NoticeDbTypeEnum.getType(enableRedisStorage)))
+                .findFirst()
+                .orElseThrow(() -> new RepositoryNotExistException("noticeService.getExceptionStatisticRepository not exist"));
+    }
+
+    private LockUtils getLockUtils(Boolean enableRedisStorage) {
+        return lockUtils.stream()
+                .filter(e -> Objects.equals(e.getType(), NoticeDbTypeEnum.getType(enableRedisStorage)))
                 .findFirst()
                 .orElseThrow(() -> new RepositoryNotExistException("noticeService.getExceptionStatisticRepository not exist"));
     }

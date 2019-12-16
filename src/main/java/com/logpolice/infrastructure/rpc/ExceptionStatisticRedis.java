@@ -2,7 +2,7 @@ package com.logpolice.infrastructure.rpc;
 
 import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
-import com.logpolice.infrastructure.enums.NoticeRepositoryEnum;
+import com.logpolice.infrastructure.enums.NoticeDbTypeEnum;
 import com.logpolice.infrastructure.properties.LogpoliceConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -20,8 +20,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
 
-    private final String REDIS_KEY_VERSION = "_version";
-
     private final RedisTemplate<String, Object> redisTemplate;
 
     public ExceptionStatisticRedis(RedisTemplate<String, Object> redisTemplate) {
@@ -29,8 +27,8 @@ public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
     }
 
     @Override
-    public NoticeRepositoryEnum getType() {
-        return NoticeRepositoryEnum.REDIS;
+    public NoticeDbTypeEnum getType() {
+        return NoticeDbTypeEnum.REDIS;
     }
 
     @Override
@@ -45,32 +43,7 @@ public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
 
     @Override
     public boolean save(String openId, ExceptionStatistic exceptionStatistic) {
-        boolean success;
-        if (success = lock(openId)) {
-            try {
-                redisTemplate.opsForValue().set(openId, exceptionStatistic, LogpoliceConstant.CLEAN_TIME_INTERVAL, TimeUnit.SECONDS);
-            } finally {
-                unlock(openId);
-            }
-        }
-        return success;
-    }
-
-    private boolean lock(String openId) {
-        Long increment = 1L;
-        String redisKey = openId + REDIS_KEY_VERSION;
-        Long remoteVersion = redisTemplate.opsForValue().increment(redisKey, increment);
-        if (Objects.equals(remoteVersion, increment)) {
-            return true;
-        }
-        long versionMax = 20L;
-        if (remoteVersion > versionMax) {
-            redisTemplate.delete(redisKey);
-        }
-        return false;
-    }
-
-    private void unlock(String openId) {
-        redisTemplate.delete(openId + REDIS_KEY_VERSION);
+        redisTemplate.opsForValue().set(openId, exceptionStatistic, LogpoliceConstant.CLEAN_TIME_INTERVAL, TimeUnit.SECONDS);
+        return true;
     }
 }

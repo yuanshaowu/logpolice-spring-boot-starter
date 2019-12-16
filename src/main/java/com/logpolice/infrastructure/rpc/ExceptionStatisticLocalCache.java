@@ -2,13 +2,12 @@ package com.logpolice.infrastructure.rpc;
 
 import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
-import com.logpolice.infrastructure.enums.NoticeRepositoryEnum;
+import com.logpolice.infrastructure.enums.NoticeDbTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 异常统计本地缓存
@@ -20,17 +19,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ExceptionStatisticLocalCache implements ExceptionStatisticRepository {
 
     private final Map<String, ExceptionStatistic> exceptionStatisticMap;
-    private final Map<String, AtomicInteger> exceptionVersionMap;
 
-    public ExceptionStatisticLocalCache(Map<String, ExceptionStatistic> exceptionStatisticMap,
-                                        Map<String, AtomicInteger> exceptionVersionMap) {
+    public ExceptionStatisticLocalCache(Map<String, ExceptionStatistic> exceptionStatisticMap) {
         this.exceptionStatisticMap = exceptionStatisticMap;
-        this.exceptionVersionMap = exceptionVersionMap;
     }
 
     @Override
-    public NoticeRepositoryEnum getType() {
-        return NoticeRepositoryEnum.LOCAL_CACHE;
+    public NoticeDbTypeEnum getType() {
+        return NoticeDbTypeEnum.LOCAL_CACHE;
     }
 
     @Override
@@ -48,29 +44,7 @@ public class ExceptionStatisticLocalCache implements ExceptionStatisticRepositor
 
     @Override
     public boolean save(String openId, ExceptionStatistic exceptionStatistic) {
-        boolean lock;
-        if (lock = lock(openId)) {
-            exceptionStatisticMap.put(openId, exceptionStatistic);
-            unlock(openId);
-        }
-        return lock;
+        exceptionStatisticMap.put(openId, exceptionStatistic);
+        return true;
     }
-
-    private boolean lock(String openId) {
-        AtomicInteger version = exceptionVersionMap.computeIfAbsent(openId, v -> new AtomicInteger(0));
-        int remoteVersion = version.incrementAndGet();
-        if (remoteVersion == 1) {
-            return true;
-        }
-        int versionMax = 20;
-        if (remoteVersion > versionMax) {
-            exceptionVersionMap.remove(openId);
-        }
-        return false;
-    }
-
-    private void unlock(String openId) {
-        exceptionVersionMap.remove(openId);
-    }
-
 }
