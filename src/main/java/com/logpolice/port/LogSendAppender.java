@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2019/8/27
  */
 @Slf4j
-public class LogbackAppender extends UnsynchronizedAppenderBase<LoggingEvent> {
+public class LogSendAppender extends UnsynchronizedAppenderBase<LoggingEvent> {
 
     private PatternLayout layout;
 
