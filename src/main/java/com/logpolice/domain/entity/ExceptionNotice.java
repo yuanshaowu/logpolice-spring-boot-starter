@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.springframework.data.annotation.Transient;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
@@ -109,14 +108,12 @@ public class ExceptionNotice implements Serializable {
     /**
      * 堆栈信息
      */
-    @Transient
     private List<String> stackTraceElementProxys;
 
     /**
      * 堆栈信息
      */
     @Getter
-    @Transient
     private boolean send;
 
     /**

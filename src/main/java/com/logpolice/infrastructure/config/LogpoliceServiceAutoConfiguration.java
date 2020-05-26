@@ -1,6 +1,7 @@
 package com.logpolice.infrastructure.config;
 
 import com.logpolice.application.NoticeService;
+import com.logpolice.application.NoticeServiceFactory;
 import com.logpolice.domain.repository.ExceptionNoticeRepository;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
 import com.logpolice.infrastructure.utils.LockUtils;
@@ -37,7 +38,12 @@ public class LogpoliceServiceAutoConfiguration {
     }
 
     @Bean
+    public NoticeServiceFactory noticeServiceFactory() {
+        return new NoticeServiceFactory(exceptionNoticeRepositories, exceptionStatisticRepositories, lockUtils);
+    }
+
+    @Bean
     public NoticeService noticeService() {
-        return new NoticeService(exceptionNoticeRepositories, exceptionStatisticRepositories, lockUtils);
+        return new NoticeService(noticeServiceFactory());
     }
 }

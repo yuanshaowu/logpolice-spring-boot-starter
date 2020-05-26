@@ -33,7 +33,7 @@ public interface LogpoliceProperties {
      * 日志报警清除时间
      */
     default Long getCleanTimeInterval() {
-        return LogpoliceConstant.CLEAN_TIME_INTERVAL;
+        return Long.valueOf(LogpoliceConstant.CLEAN_TIME_INTERVAL);
     }
 
     /**
