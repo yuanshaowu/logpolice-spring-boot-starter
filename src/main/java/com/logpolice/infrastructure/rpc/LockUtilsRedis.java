@@ -2,7 +2,9 @@ package com.logpolice.infrastructure.rpc;
 
 import com.logpolice.infrastructure.enums.NoticeDbTypeEnum;
 import com.logpolice.infrastructure.utils.LockUtils;
-import com.logpolice.infrastructure.utils.RedisUtils;
+import com.logpolice.infrastructure.utils.RedisFactory;
+
+import java.util.List;
 
 /**
  * redis锁
@@ -12,10 +14,10 @@ import com.logpolice.infrastructure.utils.RedisUtils;
  */
 public class LockUtilsRedis implements LockUtils {
 
-    private final RedisUtils redisUtils;
+    private final List<RedisFactory> redisFactories;
 
-    public LockUtilsRedis(RedisUtils redisUtils) {
-        this.redisUtils = redisUtils;
+    public LockUtilsRedis(List<RedisFactory> redisFactories) {
+        this.redisFactories = redisFactories;
     }
 
     @Override
@@ -25,11 +27,12 @@ public class LockUtilsRedis implements LockUtils {
 
     @Override
     public boolean lock(String key) {
-        return redisUtils.lock(key, "1", 1);
+        return redisFactories.get(0).lock(key, "1", 1);
     }
 
     @Override
     public void unlock(String key) {
-        redisUtils.del(key);
+        redisFactories.get(0).del(key);
     }
+
 }

@@ -5,10 +5,11 @@ import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
 import com.logpolice.infrastructure.enums.NoticeDbTypeEnum;
 import com.logpolice.infrastructure.properties.LogpoliceConstant;
-import com.logpolice.infrastructure.utils.RedisUtils;
+import com.logpolice.infrastructure.utils.RedisFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -20,10 +21,10 @@ import java.util.Optional;
 @Slf4j
 public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
 
-    private final RedisUtils redisUtils;
+    private final List<RedisFactory> redisFactories;
 
-    public ExceptionStatisticRedis(RedisUtils redisUtils) {
-        this.redisUtils = redisUtils;
+    public ExceptionStatisticRedis(List<RedisFactory> redisFactories) {
+        this.redisFactories = redisFactories;
     }
 
     @Override
@@ -34,7 +35,7 @@ public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
     @Override
     public Optional<ExceptionStatistic> findByOpenId(String openId) {
         ExceptionStatistic exceptionStatistic = null;
-        String result = redisUtils.get(openId);
+        String result = redisFactories.get(0).get(openId);
         if (!Strings.isEmpty(result)) {
             exceptionStatistic = JSONObject.parseObject(result, ExceptionStatistic.class);
         }
@@ -43,7 +44,7 @@ public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
 
     @Override
     public boolean save(String openId, ExceptionStatistic exceptionStatistic) {
-        redisUtils.setex(openId, LogpoliceConstant.CLEAN_TIME_INTERVAL, JSONObject.toJSONString(exceptionStatistic));
+        redisFactories.get(0).setex(openId, LogpoliceConstant.CLEAN_TIME_INTERVAL, JSONObject.toJSONString(exceptionStatistic));
         return true;
     }
 }

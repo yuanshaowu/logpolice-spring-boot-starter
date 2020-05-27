@@ -46,4 +46,5 @@ public class LogpoliceServiceAutoConfiguration {
     public NoticeService noticeService() {
         return new NoticeService(noticeServiceFactory());
     }
+
 }
