@@ -91,4 +91,12 @@ public interface LogpoliceProperties {
     default Set<String> getClassWhiteList() {
         return new HashSet<>();
     }
+
+    /**
+     * 获取模板格式
+     */
+    default String getLogPattern() {
+        return LogpoliceConstant.PROFILES_ACTIVE;
+    }
+
 }

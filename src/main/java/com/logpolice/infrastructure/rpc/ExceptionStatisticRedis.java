@@ -7,7 +7,7 @@ import com.logpolice.infrastructure.enums.NoticeDbTypeEnum;
 import com.logpolice.infrastructure.properties.LogpoliceConstant;
 import com.logpolice.infrastructure.utils.RedisFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +36,7 @@ public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
     public Optional<ExceptionStatistic> findByOpenId(String openId) {
         ExceptionStatistic exceptionStatistic = null;
         String result = redisFactories.get(0).get(openId);
-        if (!Strings.isEmpty(result)) {
+        if (!StringUtils.isEmpty(result)) {
             exceptionStatistic = JSONObject.parseObject(result, ExceptionStatistic.class);
         }
         return Optional.ofNullable(exceptionStatistic);

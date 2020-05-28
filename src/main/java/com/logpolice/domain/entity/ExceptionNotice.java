@@ -1,7 +1,7 @@
 package com.logpolice.domain.entity;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
-import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.classic.spi.StackTraceElementProxy;
 import com.logpolice.infrastructure.utils.DateUtils;
 import lombok.AllArgsConstructor;
@@ -139,18 +139,19 @@ public class ExceptionNotice implements Serializable {
     /**
      * 创建异常信息（自定义构造）
      *
-     * @param project        工程
-     * @param projectAddress 工程地址
-     * @param traceInfo      堆栈
-     * @param eventObject    事件对象
-     * @param cacheKey       缓存key
+     * @param project                工程
+     * @param projectAddress         工程地址
+     * @param traceInfo              堆栈
+     * @param eventObject            事件对象
+     * @param cacheKey               缓存key
+     * @param isShowFormattedMessage 是否展示模板信息
      */
-    public ExceptionNotice(String project, String projectAddress, String traceInfo, LoggingEvent eventObject, String cacheKey) {
+    public ExceptionNotice(String project, String projectAddress, String traceInfo, ILoggingEvent eventObject, String cacheKey, Boolean isShowFormattedMessage) {
         this.project = project;
         this.projectAddress = projectAddress;
         this.classPath = eventObject.getLoggerName();
         this.params = eventObject.getArgumentArray();
-        this.exceptionMessage = eventObject.getFormattedMessage();
+        this.updateExceptionMessage(eventObject.getFormattedMessage(), traceInfo, isShowFormattedMessage);
         this.traceInfo = StringUtils.isEmpty(traceInfo) ? DEFAULT_INFO : traceInfo;
         LocalDateTime localDateTime = DateUtils.getLocalDateTime(eventObject.getTimeStamp());
         this.latestShowTime = localDateTime;
@@ -165,6 +166,19 @@ public class ExceptionNotice implements Serializable {
         }
         this.openId = calOpenId(cacheKey);
         this.send = false;
+    }
+
+    public void updateExceptionMessage(String formattedMessage, String traceInfo, Boolean isShowPattenMessage) {
+        if (!isShowPattenMessage || StringUtils.isEmpty(traceInfo)) {
+            this.exceptionMessage = formattedMessage;
+            return;
+        }
+        List<String> pattenMessageArr = Arrays.stream(traceInfo.split("\n"))
+                .flatMap(patten -> Arrays.stream(patten.split("\r")))
+                .flatMap(patten -> Arrays.stream(patten.split("\t")))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        this.exceptionMessage = StringUtils.isEmpty(pattenMessageArr.get(0)) ? formattedMessage : pattenMessageArr.get(0);
     }
 
     /**
