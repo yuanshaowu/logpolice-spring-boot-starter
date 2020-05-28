@@ -1,9 +1,6 @@
 package com.logpolice.domain.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -30,30 +27,35 @@ public class ExceptionStatistic implements Serializable {
      * 唯一id
      */
     @Getter
+    @Setter
     private String openId;
 
     /**
      * 异常出现次数
      */
     @Getter
+    @Setter
     private Integer showCount;
 
     /**
      * 上一次通知时的次数
      */
     @Getter
+    @Setter
     private Integer lastShowedCount;
 
     /**
      * 首次异常时间
      */
     @Getter
+    @Setter
     private LocalDateTime firstTime;
 
     /**
      * 异常通知的时间
      */
     @Getter
+    @Setter
     private LocalDateTime noticeTime;
 
     /**
