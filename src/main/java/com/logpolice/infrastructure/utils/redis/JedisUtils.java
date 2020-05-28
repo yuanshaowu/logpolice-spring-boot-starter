@@ -35,17 +35,6 @@ public class JedisUtils implements RedisFactory {
     }
 
     @Override
-    public Long del(String key) {
-        Long ret = null;
-        try (Jedis shardedJedis = shardedJedisPool.getResource()) {
-            ret = shardedJedis.del(PRE + key);
-        } catch (Exception e) {
-            log.warn("JedisUtils class del Method is Exception", e);
-        }
-        return ret;
-    }
-
-    @Override
     public String get(String key) {
         String ret = null;
         try (Jedis shardedJedis = shardedJedisPool.getResource()) {
@@ -57,14 +46,15 @@ public class JedisUtils implements RedisFactory {
     }
 
     @Override
-    public String setex(String key, int seconds, String value) {
-        String ret = null;
+    public boolean setex(String key, String value, int seconds) {
+        boolean success = false;
         try (Jedis shardedJedis = shardedJedisPool.getResource()) {
-            ret = shardedJedis.setex(PRE + key, seconds * 1000, value);
+            shardedJedis.setex(PRE + key, seconds, value);
+            success = true;
         } catch (Exception e) {
             log.warn("JedisUtils class setex Method is Exception", e);
         }
-        return ret;
+        return success;
     }
 
     @Override
@@ -82,6 +72,18 @@ public class JedisUtils implements RedisFactory {
             log.warn("JedisUtils class setex Method is Exception", e);
         }
         return false;
+    }
+
+    @Override
+    public boolean unlock(String key) {
+        boolean success = false;
+        try (Jedis shardedJedis = shardedJedisPool.getResource()) {
+            shardedJedis.del(PRE_LOCK + key);
+            success = true;
+        } catch (Exception e) {
+            log.warn("JedisUtils class del Method is Exception", e);
+        }
+        return success;
     }
 
 }

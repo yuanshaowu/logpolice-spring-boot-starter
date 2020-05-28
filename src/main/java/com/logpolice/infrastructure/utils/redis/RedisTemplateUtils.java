@@ -19,6 +19,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class RedisTemplateUtils implements RedisFactory {
 
+    private static final String PRE = "logpolice_spring_boot_starter_";
+    private static final String PRE_LOCK = "logpolice_spring_boot_starter_lock_";
+
     private final RedisTemplate<String, Object> redisTemplate;
 
     public RedisTemplateUtils(RedisTemplate<String, Object> redisTemplate) {
@@ -32,27 +35,30 @@ public class RedisTemplateUtils implements RedisFactory {
 
     @Override
     public String get(String key) {
-        Object obj = redisTemplate.opsForValue().get(key);
+        Object obj = redisTemplate.opsForValue().get(PRE + key);
         return Objects.nonNull(obj) ? JSONObject.toJSONString(obj) : null;
     }
 
     @Override
-    public String setex(String key, int seconds, String value) {
-        redisTemplate.opsForValue().set(key, value, seconds, TimeUnit.SECONDS);
-        return "1";
+    public boolean setex(String key, String value, int seconds) {
+        redisTemplate.opsForValue().set(PRE + key, value, seconds, TimeUnit.SECONDS);
+        return true;
     }
 
     @Override
     public boolean lock(String lockKey, String value, int lockSecond) {
-        return (Boolean) redisTemplate.execute((RedisCallback) connection ->
-                connection.set(lockKey.getBytes(), value.getBytes(), Expiration.seconds(lockSecond), RedisStringCommands.SetOption.SET_IF_ABSENT)
+        return redisTemplate.execute((RedisCallback<Boolean>) connection ->
+                connection.set((PRE_LOCK + lockKey).getBytes(),
+                        value.getBytes(),
+                        Expiration.seconds(lockSecond),
+                        RedisStringCommands.SetOption.SET_IF_ABSENT)
         );
     }
 
     @Override
-    public Long del(String key) {
-        redisTemplate.delete(key);
-        return 1L;
+    public boolean unlock(String key) {
+        redisTemplate.delete(PRE_LOCK + key);
+        return true;
     }
 
 }

@@ -32,7 +32,7 @@ public class LockUtilsRedis implements LockUtils {
 
     @Override
     public void unlock(String key) {
-        redisFactories.get(0).del(key);
+        redisFactories.get(0).unlock(key);
     }
 
 }

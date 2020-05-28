@@ -44,7 +44,7 @@ public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
 
     @Override
     public boolean save(String openId, ExceptionStatistic exceptionStatistic) {
-        redisFactories.get(0).setex(openId, LogpoliceConstant.CLEAN_TIME_INTERVAL, JSONObject.toJSONString(exceptionStatistic));
+        redisFactories.get(0).setex(openId, JSONObject.toJSONString(exceptionStatistic), LogpoliceConstant.CLEAN_TIME_INTERVAL);
         return true;
     }
 }

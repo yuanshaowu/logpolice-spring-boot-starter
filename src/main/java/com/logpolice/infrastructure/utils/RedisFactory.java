@@ -29,27 +29,27 @@ public interface RedisFactory {
      * 设置值
      *
      * @param key     键
-     * @param seconds 秒
      * @param value   值
+     * @param seconds 秒
      * @return 状态
      */
-    String setex(String key, int seconds, String value);
+    boolean setex(String key, String value, int seconds);
 
     /**
      * 锁
      *
-     * @param lockKey    键
-     * @param value      值
-     * @param lockSecond 秒
-     * @return
+     * @param key     键
+     * @param value   值
+     * @param seconds 秒
+     * @return 状态
      */
-    boolean lock(String lockKey, String value, int lockSecond);
+    boolean lock(String key, String value, int seconds);
 
     /**
-     * 删除
+     * 解锁
      *
      * @param key 键
      * @return 状态
      */
-    Long del(String key);
+    boolean unlock(String key);
 }
