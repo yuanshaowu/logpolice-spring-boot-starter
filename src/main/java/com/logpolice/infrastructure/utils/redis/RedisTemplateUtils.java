@@ -36,7 +36,7 @@ public class RedisTemplateUtils implements RedisFactory {
     @Override
     public String get(String key) {
         Object obj = redisTemplate.opsForValue().get(PRE + key);
-        return Objects.nonNull(obj) ? JSONObject.toJSONString(obj) : null;
+        return Objects.nonNull(obj) ? obj instanceof String ? (String) obj : JSONObject.toJSONString(obj) : null;
     }
 
     @Override
@@ -46,11 +46,11 @@ public class RedisTemplateUtils implements RedisFactory {
     }
 
     @Override
-    public boolean lock(String lockKey, String value, int lockSecond) {
+    public boolean lock(String key, String value, int seconds) {
         return redisTemplate.execute((RedisCallback<Boolean>) connection ->
-                connection.set((PRE_LOCK + lockKey).getBytes(),
+                connection.set((PRE_LOCK + key).getBytes(),
                         value.getBytes(),
-                        Expiration.seconds(lockSecond),
+                        Expiration.seconds(seconds),
                         RedisStringCommands.SetOption.SET_IF_ABSENT)
         );
     }
