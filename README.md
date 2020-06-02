@@ -145,6 +145,7 @@ log.error()未写入异常，推送效果（钉钉/邮箱）
        10. redis缓存key （默认：logpolice_exception_statistic:）
        11. 异常白名单 （默认：无)
        12. 类文件白名单 （默认：无)
+       13. 日志模板（默认：无）
  ```
  
  2. 钉钉配置（若接入，*必填）, 需实现：LogpoliceDingDingProperties接口
@@ -173,6 +174,11 @@ log.error()未写入异常，推送效果（钉钉/邮箱）
      * spring.mail.properties.mail.smtp.auth=true
      * spring.mail.properties.mail.smtp.starttls.enable=true
      * spring.mail.properties.mail.smtp.starttls.required=true
+```
+
+ 4. 飞书配置（若接入，*必填）, 需实现：LogpoliceFeiShuProperties接口
+```
+     * 飞书webhook
 ```
 
 

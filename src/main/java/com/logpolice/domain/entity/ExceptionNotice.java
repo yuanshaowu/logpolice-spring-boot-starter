@@ -301,13 +301,19 @@ public class ExceptionNotice implements Serializable {
      * @return 布尔
      */
     public boolean containsWhiteList(Set<String> exceptionWhiteList, Set<String> classWhiteList) {
+        if (CollectionUtils.isEmpty(exceptionWhiteList) && CollectionUtils.isEmpty(classWhiteList)) {
+            return false;
+        }
+
+        boolean isContainsException = false;
         if (!CollectionUtils.isEmpty(exceptionWhiteList) && !StringUtils.isEmpty(exceptionClassName)) {
-            return exceptionWhiteList.contains(exceptionClassName);
+            isContainsException = exceptionWhiteList.contains(exceptionClassName);
         }
+        boolean isContainsClass = false;
         if (!CollectionUtils.isEmpty(classWhiteList) && !StringUtils.isEmpty(classPath)) {
-            return classWhiteList.contains(classPath);
+            isContainsClass = classWhiteList.contains(classPath);
         }
-        return false;
+        return isContainsException || isContainsClass;
     }
 
     /**
