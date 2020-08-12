@@ -30,17 +30,17 @@ public class NoticeService {
         boolean succeed = false;
         String openId = exceptionNotice.getOpenId();
         LockUtils lockUtils = noticeServiceFactory.getLockUtils(logpoliceProperties);
-        for (int i = 0; i < LogpoliceConstant.LOCK_MAX_RETRY_NUM; i++) {
-            try {
+        try {
+            for (int i = 0; i < LogpoliceConstant.LOCK_MAX_RETRY_NUM; i++) {
                 if (!lockUtils.lock(openId)) {
                     continue;
                 }
                 exceptionNotice = this.saveExceptionNotice(exceptionNotice, logpoliceProperties);
                 succeed = true;
                 break;
-            } finally {
-                lockUtils.unlock(openId);
             }
+        } finally {
+            lockUtils.unlock(openId);
         }
 
         // 判断是否符合推送条件，可以优化异步推送

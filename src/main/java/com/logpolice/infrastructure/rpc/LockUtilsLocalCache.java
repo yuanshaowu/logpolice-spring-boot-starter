@@ -29,7 +29,7 @@ public class LockUtilsLocalCache implements LockUtils {
     @Override
     public boolean lock(String key) {
         AtomicInteger version = versionMap.computeIfAbsent(key, v -> new AtomicInteger(1));
-        return Objects.equals(version.incrementAndGet(), 1L);
+        return Objects.equals(version.incrementAndGet(), 1);
     }
 
     @Override
