@@ -5,9 +5,11 @@
 
 ## 背景：
 
-对于项目工程来说，bug是不可能避免的，生产环境并不能像本地环境一样方便调试，在使用者发现bug之前开发者自己先发现并提前解决肯定上上策，但是有些框架异常并非自己预期，
-这时候可以考虑基于log.error()主动触发异常提示开发者，并精确获取异常堆栈信息，在获取异常消息推送的避免消息轰炸，可以根据推送策略自定义配置。本项目基于以上需求并
-结合DDD领域开发设计而成，简单接入消息报功能
+对于项目工程来说，bug是不可能避免的。生产环境并不能像本地环境一样方便调试，无法第一时间知道线上事故。所以我们就需要项目的异常通知功能，在用户发现bug之前，开发者自可以提前发现问题点，避免不必要的线线上事故。
+
+如果捕获项目全局异常，部分异常不是我们想关注的，这时候可以考虑基于日志的log.error()主动触发异常提示开发者，并精确获取异常堆栈信息，在获取异常消息推送的避免消息轰炸，可以根据自定义配置决定日志推送策略。
+
+本项目基于以上需求并 结合DDD领域开发设计而成，简单接入消息报功能
 
 ## 功能
 1. 监听log.error()，异步推送堆栈信息，快速接入
@@ -36,41 +38,55 @@
     <dependency>
         <groupId>com.logpolice</groupId>
         <artifactId>logpolice-spring-boot-starter</artifactId>
-        <version>1.0.0-acm</version>
+        <version>1.2.2-hot</version>
     </dependency>
-    <!-- 本demo使用acm，可以其他缓存读取 -->
-    <dependency>
-        <groupId>com.sprucetec.acm</groupId>
-        <artifactId>acm-client-spring-boot-starter</artifactId>
-        <version>0.1.2</version>
-    </dependency>
+    
 ```
-3. 在spring 管理新增类文件，实现LogpoliceProperties, LogpoliceDingDingProperties：
+3. 项目新增类文件，实现LogpoliceProperties, LogpoliceDingDingProperties：
 ```
-    //本demo使用acm，可以其他缓存读取
     @Component
-    @AcmPropertySource(dataId = "xxx.xxx-xxxx", first = true, autoRefreshed = true)
     public class LogpoliceAcmProperties implements LogpoliceProperties, LogpoliceDingDingProperties {
-        
-        @Override
-        public String getWebHook() {
-            return "https://oapi.dingtalk.com/robot/send?access_token=xxxxxxx";
-        }
     
         @Override
         public String getAppCode() {
-            return "xxxxxxxxx";
+            return "工程名";
         }
     
         @Override
         public String getLocalIp() {
-            return "127.0.0.1";
+            return "工程地址";
         }
     
         @Override
         public Boolean getEnabled() {
             return true;
         }
+    
+        @Override
+        public Long getTimeInterval() {
+            return 60 * 5;
+        }
+    
+        @Override
+        public Boolean getEnableRedisStorage() {
+            return true;
+        }
+    
+        @Override
+        public NoticeSendEnum getNoticeSendType() {
+            return NoticeSendEnum.DING_DING;
+        }
+    
+        @Override
+        public Set<String> getExceptionWhiteList() {
+            return new HashSet<>();
+        }
+    
+        @Override
+        public Set<String> getClassWhiteList() {
+            return new HashSet<>();
+        }
+    
     }
 ```
 4. 钉钉配置：[钉钉机器人](https://open-doc.dingtalk.com/microapp/serverapi2/krgddi "自定义机器人")
