@@ -1,14 +1,8 @@
 package com.logpolice.infrastructure.config;
 
-import com.logpolice.application.NoticeService;
-import com.logpolice.domain.repository.ExceptionNoticeRepository;
-import com.logpolice.infrastructure.properties.LogpoliceProperties;
 import com.logpolice.infrastructure.rpc.ExceptionStatisticLocalCache;
-import com.logpolice.infrastructure.rpc.ExceptionStatisticRedis;
+import com.logpolice.infrastructure.rpc.LockUtilsLocalCache;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,16 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2019/8/28
  */
 @Configuration
-@EnableConfigurationProperties(LogpoliceProperties.class)
 @AutoConfigureAfter({LogpoliceMailAutoConfiguration.class, LogpoliceDingDingAutoConfiguration.class})
-@ConditionalOnMissingBean(ExceptionStatisticRedis.class)
 public class LogpoliceLoclCacheAutoConfiguration {
-
-    private final ExceptionNoticeRepository exceptionNoticeRepository;
-
-    public LogpoliceLoclCacheAutoConfiguration(ExceptionNoticeRepository exceptionNoticeRepository) {
-        this.exceptionNoticeRepository = exceptionNoticeRepository;
-    }
 
     @Bean
     public ExceptionStatisticLocalCache exceptionStatisticLocalCache() {
@@ -38,7 +24,7 @@ public class LogpoliceLoclCacheAutoConfiguration {
     }
 
     @Bean
-    public NoticeService noticeService() {
-        return new NoticeService(exceptionNoticeRepository,exceptionStatisticLocalCache());
+    public LockUtilsLocalCache lockUtilsLocalCache() {
+        return new LockUtilsLocalCache(new ConcurrentHashMap<>());
     }
 }

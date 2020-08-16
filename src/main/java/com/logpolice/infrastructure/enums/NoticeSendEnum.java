@@ -11,7 +11,9 @@ public enum NoticeSendEnum {
     /**
      * MAIL：邮件
      * DING_DING：钉钉
+     * FEI_SHU：飞书
      */
     MAIL,
-    DING_DING;
+    DING_DING,
+    FEI_SHU;
 }

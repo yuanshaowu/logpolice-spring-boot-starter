@@ -2,14 +2,15 @@ package com.logpolice.infrastructure.rpc;
 
 import com.logpolice.domain.entity.ExceptionNotice;
 import com.logpolice.domain.repository.ExceptionNoticeRepository;
+import com.logpolice.infrastructure.enums.NoticeSendEnum;
 import com.logpolice.infrastructure.exception.EmailFormatException;
 import com.logpolice.infrastructure.properties.LogpoliceConstant;
 import com.logpolice.infrastructure.properties.LogpoliceMailProperties;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -37,6 +38,11 @@ public class MailNoticeClient implements ExceptionNoticeRepository {
     }
 
     @Override
+    public NoticeSendEnum getType() {
+        return NoticeSendEnum.MAIL;
+    }
+
+    @Override
     public void send(ExceptionNotice exceptionNotice) {
         checkAllEmails(logpoliceMailProperties);
         SimpleMailMessage mailMessage = new SimpleMailMessage();
@@ -58,12 +64,12 @@ public class MailNoticeClient implements ExceptionNoticeRepository {
     }
 
     private boolean isEmail(String email) {
-        return Strings.isNotEmpty(email) && Pattern.matches(LogpoliceConstant.MAIL_PATTERN_MATCHES, email);
+        return !StringUtils.isEmpty(email) && Pattern.matches(LogpoliceConstant.MAIL_PATTERN_MATCHES, email);
     }
 
     private void checkAllEmails(LogpoliceMailProperties logpoliceMailProperties) {
         String fromEmail = logpoliceMailProperties.getFrom();
-        if (Strings.isEmpty(fromEmail) || !isEmail(logpoliceMailProperties.getFrom())) {
+        if (StringUtils.isEmpty(fromEmail) || !isEmail(logpoliceMailProperties.getFrom())) {
             throw new EmailFormatException("mailNoticeClient.checkAllEmails fromEmail format error!");
         }
         String[] toEmail = logpoliceMailProperties.getTo();

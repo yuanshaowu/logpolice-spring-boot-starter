@@ -1,14 +1,16 @@
 package com.logpolice.infrastructure.rpc;
 
+import com.alibaba.fastjson.JSONObject;
 import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
+import com.logpolice.infrastructure.enums.NoticeDbTypeEnum;
 import com.logpolice.infrastructure.properties.LogpoliceConstant;
+import com.logpolice.infrastructure.utils.RedisFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.util.StringUtils;
 
-import java.util.Objects;
+import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 异常统计本地缓存
@@ -19,24 +21,30 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ExceptionStatisticRedis implements ExceptionStatisticRepository {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final List<RedisFactory> redisFactories;
 
-    public ExceptionStatisticRedis(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
+    public ExceptionStatisticRedis(List<RedisFactory> redisFactories) {
+        this.redisFactories = redisFactories;
+    }
+
+    @Override
+    public NoticeDbTypeEnum getType() {
+        return NoticeDbTypeEnum.REDIS;
     }
 
     @Override
     public Optional<ExceptionStatistic> findByOpenId(String openId) {
         ExceptionStatistic exceptionStatistic = null;
-        Object obj = redisTemplate.opsForValue().get(openId);
-        if (Objects.nonNull(obj) && obj instanceof ExceptionStatistic) {
-            exceptionStatistic = (ExceptionStatistic) obj;
+        String result = redisFactories.get(0).get(openId);
+        if (!StringUtils.isEmpty(result)) {
+            exceptionStatistic = JSONObject.parseObject(result, ExceptionStatistic.class);
         }
         return Optional.ofNullable(exceptionStatistic);
     }
 
     @Override
-    public void save(String openId, ExceptionStatistic exceptionStatistic) {
-        redisTemplate.opsForValue().set(openId, exceptionStatistic, LogpoliceConstant.CLEAN_TIME_INTERVAL, TimeUnit.SECONDS);
+    public boolean save(String openId, ExceptionStatistic exceptionStatistic) {
+        redisFactories.get(0).setex(openId, JSONObject.toJSONString(exceptionStatistic), LogpoliceConstant.CLEAN_TIME_INTERVAL);
+        return true;
     }
 }

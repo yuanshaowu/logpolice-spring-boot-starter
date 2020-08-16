@@ -37,8 +37,8 @@ public enum NoticeFrequencyType {
         return false;
     }
 
-    public static boolean checkTimeOut(ExceptionStatistic exceptionStatistics, LogpoliceProperties logpoliceProperties) {
-        Duration dur = Duration.between(exceptionStatistics.getFirstTime(), LocalDateTime.now());
-        return Duration.ofSeconds(logpoliceProperties.getCleanTimeInterval()).compareTo(dur) < 0;
+    public static boolean check(ExceptionStatistic exceptionStatistic, LogpoliceProperties logpoliceProperties) {
+        NoticeFrequencyType frequencyType = logpoliceProperties.getFrequencyType();
+        return exceptionStatistic.isFirst() || frequencyType.checkSend(exceptionStatistic, logpoliceProperties);
     }
 }

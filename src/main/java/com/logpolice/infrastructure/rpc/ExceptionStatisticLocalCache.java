@@ -2,6 +2,7 @@ package com.logpolice.infrastructure.rpc;
 
 import com.logpolice.domain.entity.ExceptionStatistic;
 import com.logpolice.domain.repository.ExceptionStatisticRepository;
+import com.logpolice.infrastructure.enums.NoticeDbTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -17,27 +18,33 @@ import java.util.Optional;
 @Slf4j
 public class ExceptionStatisticLocalCache implements ExceptionStatisticRepository {
 
-    private Map<String, ExceptionStatistic> checkOpenId;
+    private final Map<String, ExceptionStatistic> exceptionStatisticMap;
 
-    public ExceptionStatisticLocalCache(Map<String, ExceptionStatistic> checkOpenId) {
-        this.checkOpenId = checkOpenId;
+    public ExceptionStatisticLocalCache(Map<String, ExceptionStatistic> exceptionStatisticMap) {
+        this.exceptionStatisticMap = exceptionStatisticMap;
+    }
+
+    @Override
+    public NoticeDbTypeEnum getType() {
+        return NoticeDbTypeEnum.LOCAL_CACHE;
     }
 
     @Override
     public Optional<ExceptionStatistic> findByOpenId(String openId) {
-        ExceptionStatistic exceptionStatistic = checkOpenId.get(openId);
+        ExceptionStatistic exceptionStatistic = exceptionStatisticMap.get(openId);
         if (Objects.isNull(exceptionStatistic)) {
             return Optional.empty();
         }
-        return Optional.of(new ExceptionStatistic(exceptionStatistic.getShowCount(),
-                exceptionStatistic.getOpenId(),
+        return Optional.of(new ExceptionStatistic(exceptionStatistic.getOpenId(),
+                exceptionStatistic.getShowCount(),
+                exceptionStatistic.getLastShowedCount(),
                 exceptionStatistic.getFirstTime(),
-                exceptionStatistic.getNoticeTime(),
-                exceptionStatistic.getLastShowedCount()));
+                exceptionStatistic.getNoticeTime()));
     }
 
     @Override
-    public void save(String openId, ExceptionStatistic exceptionStatistic) {
-        checkOpenId.put(openId, exceptionStatistic);
+    public boolean save(String openId, ExceptionStatistic exceptionStatistic) {
+        exceptionStatisticMap.put(openId, exceptionStatistic);
+        return true;
     }
 }

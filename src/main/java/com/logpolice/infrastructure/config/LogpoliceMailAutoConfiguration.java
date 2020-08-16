@@ -20,10 +20,8 @@ import org.springframework.mail.MailSender;
  * @date 2019/8/28
  */
 @Configuration
-@EnableConfigurationProperties({MailSenderAutoConfiguration.class, LogpoliceMailProperties.class})
 @AutoConfigureAfter({MailSenderAutoConfiguration.class, LogpoliceAutoConfiguration.class})
 @ConditionalOnBean({MailSender.class, MailProperties.class})
-@ConditionalOnProperty(name = "logpolice.notice-send-type", havingValue = "MAIL")
 public class LogpoliceMailAutoConfiguration {
 
     private final MailSender mailSender;

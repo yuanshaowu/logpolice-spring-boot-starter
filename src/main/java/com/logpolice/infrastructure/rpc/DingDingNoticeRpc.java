@@ -4,11 +4,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.logpolice.domain.entity.ExceptionNotice;
 import com.logpolice.domain.repository.ExceptionNoticeRepository;
 import com.logpolice.infrastructure.dto.DingDingCommand;
+import com.logpolice.infrastructure.enums.NoticeSendEnum;
 import com.logpolice.infrastructure.exception.DingDingTokeNotExistException;
 import com.logpolice.infrastructure.properties.LogpoliceDingDingProperties;
 import com.logpolice.infrastructure.utils.HttpUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
+import org.springframework.util.StringUtils;
 
 /**
  * 钉钉推送逻辑层
@@ -26,17 +27,22 @@ public class DingDingNoticeRpc implements ExceptionNoticeRepository {
     }
 
     @Override
+    public NoticeSendEnum getType() {
+        return NoticeSendEnum.DING_DING;
+    }
+
+    @Override
     public void send(ExceptionNotice exceptionNotice) {
-        String webHook = logpoliceDingDingProperties.getWebHook();
-        if (Strings.isEmpty(webHook)) {
+        String webHook = logpoliceDingDingProperties.getDingDingWebHook();
+        if (StringUtils.isEmpty(webHook)) {
             throw new DingDingTokeNotExistException("DingDingNoticeSendServiceImpl.send error! webHook is null!");
         }
         DingDingCommand dingDingCommand = new DingDingCommand(exceptionNotice.getText(),
-                logpoliceDingDingProperties.getMsgType(),
-                logpoliceDingDingProperties.getAtMobiles(),
-                logpoliceDingDingProperties.getIsAtAll());
+                logpoliceDingDingProperties.getDingDingMsgType(),
+                logpoliceDingDingProperties.getDingDingAtMobiles(),
+                logpoliceDingDingProperties.getDingDingIsAtAll());
         String body = JSONObject.toJSONString(dingDingCommand);
         String result = HttpUtils.post(webHook, body);
-        log.info("noticeSendServiceImpl.send success, webHook:{}, command:{}, result:{}", webHook, body, result);
+        log.info("DingDingNoticeSendServiceImpl.send success, webHook:{}, command:{}, result:{}", webHook, body, result);
     }
 }

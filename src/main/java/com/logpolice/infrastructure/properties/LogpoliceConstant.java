@@ -19,11 +19,6 @@ public class LogpoliceConstant {
     public static final String LOCAL_IP = "暂无获取";
 
     /**
-     * 默认日志报警开关
-     */
-    public static final Boolean ENABLED = false;
-
-    /**
      * 默认日志redis开关
      */
     public static final Boolean ENABLE_REDIS_STORAGE = false;
@@ -31,7 +26,7 @@ public class LogpoliceConstant {
     /**
      * 默认日志报警清除时间
      */
-    public static final Long CLEAN_TIME_INTERVAL = 10800L;
+    public static final Integer CLEAN_TIME_INTERVAL = 21600;
 
     /**
      * 默认异常间隔时间
@@ -67,4 +62,9 @@ public class LogpoliceConstant {
      * 邮件规则匹配
      */
     public static final String MAIL_PATTERN_MATCHES = "^[A-Za-z0-9_\\-]+@[a-zA-Z0-9_\\-]+(\\.[a-zA-Z]{2,4})+$";
+
+    /**
+     * 锁最大重试次数
+     */
+    public static final int LOCK_MAX_RETRY_NUM = 3;
 }
