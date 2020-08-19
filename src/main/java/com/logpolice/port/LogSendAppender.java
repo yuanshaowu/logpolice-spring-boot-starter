@@ -6,9 +6,11 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import com.logpolice.application.NoticeService;
 import com.logpolice.domain.entity.ExceptionNotice;
+import com.logpolice.infrastructure.enums.ExecutorFactoryEnum;
 import com.logpolice.infrastructure.properties.LogpoliceConstant;
 import com.logpolice.infrastructure.properties.LogpoliceProperties;
 import com.logpolice.infrastructure.utils.ApplicationContextProvider;
+import com.logpolice.infrastructure.utils.LogpoliceExecutorFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
@@ -38,38 +40,43 @@ public class LogSendAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent eventObject) {
         if (Level.ERROR.equals(eventObject.getLevel())) {
-            LogpoliceProperties logpoliceProperties = ApplicationContextProvider.getBean(LogpoliceProperties.class);
-            if (!logpoliceProperties.getEnabled()) {
-                return;
-            }
-
-            String logPattern = logpoliceProperties.getLogPattern();
-            if (!Objects.equals(logpoliceProperties.getLogPattern(), layout.getPattern()) && !StringUtils.isEmpty(logPattern) && !StringUtils.isEmpty(logPattern.trim())) {
-                PatternLayout patternLayout = new PatternLayout();
-                patternLayout.setContext(this.context);
-                patternLayout.setPattern(logPattern);
-                patternLayout.start();
-                this.layout = patternLayout;
-                super.start();
-            }
-
-            String traceInfo;
-            try {
-                traceInfo = layout.doLayout(eventObject);
-            } catch (Exception e) {
-                log.warn("LogSendAppender.append getTraceInfo error!");
-                return;
-            }
-
-            NoticeService noticeService = ApplicationContextProvider.getBean(NoticeService.class);
-            ExceptionNotice exceptionNotice = new ExceptionNotice(logpoliceProperties.getAppCode(),
-                    logpoliceProperties.getLocalIp(),
-                    traceInfo,
-                    eventObject,
-                    logpoliceProperties.getExceptionRedisKey(),
-                    !Objects.equals(LogpoliceConstant.PROFILES_ACTIVE, layout.getPattern()));
-            noticeService.send(exceptionNotice, logpoliceProperties);
+            LogpoliceExecutorFactory executorFactory = ApplicationContextProvider.getBean(LogpoliceExecutorFactory.class);
+            executorFactory.getInstance(ExecutorFactoryEnum.NOTIFY).execute(() -> asyncAppender(eventObject));
         }
+    }
+
+    private void asyncAppender(ILoggingEvent eventObject) {
+        LogpoliceProperties logpoliceProperties = ApplicationContextProvider.getBean(LogpoliceProperties.class);
+        if (!logpoliceProperties.getEnabled()) {
+            return;
+        }
+
+        String logPattern = logpoliceProperties.getLogPattern();
+        if (!Objects.equals(logpoliceProperties.getLogPattern(), layout.getPattern()) && !StringUtils.isEmpty(logPattern) && !StringUtils.isEmpty(logPattern.trim())) {
+            PatternLayout patternLayout = new PatternLayout();
+            patternLayout.setContext(this.context);
+            patternLayout.setPattern(logPattern);
+            patternLayout.start();
+            this.layout = patternLayout;
+            super.start();
+        }
+
+        String traceInfo;
+        try {
+            traceInfo = layout.doLayout(eventObject);
+        } catch (Exception e) {
+            log.warn("LogSendAppender.append getTraceInfo error!");
+            return;
+        }
+
+        NoticeService noticeService = ApplicationContextProvider.getBean(NoticeService.class);
+        ExceptionNotice exceptionNotice = new ExceptionNotice(logpoliceProperties.getAppCode(),
+                logpoliceProperties.getLocalIp(),
+                traceInfo,
+                eventObject,
+                logpoliceProperties.getExceptionRedisKey(),
+                !Objects.equals(LogpoliceConstant.PROFILES_ACTIVE, layout.getPattern()));
+        noticeService.send(exceptionNotice, logpoliceProperties);
     }
 
 }

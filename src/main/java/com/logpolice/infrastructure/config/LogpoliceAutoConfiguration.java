@@ -1,8 +1,12 @@
 package com.logpolice.infrastructure.config;
 
 import com.logpolice.infrastructure.utils.ApplicationContextProvider;
+import com.logpolice.infrastructure.utils.LogpoliceExecutorFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 日志配置自动装配
@@ -13,4 +17,10 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import(ApplicationContextProvider.class)
 public class LogpoliceAutoConfiguration {
+
+    @Bean
+    public LogpoliceExecutorFactory logpoliceExecutorFactory() {
+        return new LogpoliceExecutorFactory(new ConcurrentHashMap<>());
+    }
+
 }

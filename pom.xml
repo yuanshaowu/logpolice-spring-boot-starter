@@ -5,7 +5,7 @@
 
     <groupId>com.logpolice</groupId>
     <artifactId>logpolice-spring-boot-starter</artifactId>
-    <version>1.2.2-hot</version>
+    <version>1.3.0-hot</version>
     <packaging>jar</packaging>
 
     <name>logpolice-spring-boot-starter</name>
@@ -79,6 +79,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.7</version>
         </dependency>
     </dependencies>
 
